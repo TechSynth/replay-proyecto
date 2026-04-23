@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rePLAY - Iniciar Sesión</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <h1>rePLAY</h1>
+                <p>Streaming Musical</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Iniciar Sesión</button>
+                <button class="auth-tab" data-tab="register">Registrarse</button>
+            </div>
+
+            <!-- Form de Login -->
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label for="login-email">Correo Electrónico</label>
+                    <input type="email" id="login-email" name="email" required placeholder="tu@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" name="password" required placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="auth-btn">Iniciar Sesión</button>
+
+                <div id="login-error" class="auth-error" style="display: none;"></div>
+            </form>
+
+            <!-- Form de Registro -->
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="register-name">Nombre Completo</label>
+                    <input type="text" id="register-name" name="nombre" required placeholder="Tu Nombre">
+                </div>
+
+                <div class="form-group">
+                    <label for="register-email">Correo Electrónico</label>
+                    <input type="email" id="register-email" name="email" required placeholder="tu@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="register-password">Contraseña</label>
+                    <input type="password" id="register-password" name="password" required placeholder="••••••••">
+                </div>
+
+                <div class="form-group">
+                    <label for="register-confirm">Confirmar Contraseña</label>
+                    <input type="password" id="register-confirm" name="confirm" required placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="auth-btn">Registrarse</button>
+
+                <div id="register-error" class="auth-error" style="display: none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+
+</html>

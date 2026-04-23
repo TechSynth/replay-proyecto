@@ -3,9 +3,12 @@ require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise');
 const path = require('path');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura';
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -31,11 +34,146 @@ async function connectDB() {
     }
 }
 
+// Middleware para verificar token JWT
+function verifyToken(req, res, next) {
+    const token = req.headers['authorization']?.split(' ')[1];
+    
+    if (!token) {
+        return res.status(401).json({ success: false, error: 'Token requerido' });
+    }
+    
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.userId = decoded.id;
+        next();
+    } catch (error) {
+        res.status(401).json({ success: false, error: 'Token inválido' });
+    }
+}
+
 // RUTAS DE LA API
 
 // Ruta de inicio
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Ruta de login
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// AUTENTICACIÓN
+
+// Registro de usuario
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { nombre, email, password } = req.body;
+        
+        // Validar datos
+        if (!nombre || !email || !password) {
+            return res.status(400).json({ success: false, error: 'Todos los campos son requeridos' });
+        }
+        
+        // Verificar si el email ya existe
+        const [existingUser] = await db.execute(
+            'SELECT id FROM usuarios WHERE email = ?',
+            [email]
+        );
+        
+        if (existingUser.length > 0) {
+            return res.status(400).json({ success: false, error: 'El email ya está registrado' });
+        }
+        
+        // Hash de la contraseña
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Crear usuario
+        const [result] = await db.execute(
+            'INSERT INTO usuarios (nombre, email, password_hash) VALUES (?, ?, ?)',
+            [nombre, email, hashedPassword]
+        );
+        
+        const userId = result.insertId;
+        const token = jwt.sign({ id: userId, email }, JWT_SECRET, { expiresIn: '7d' });
+        
+        res.status(201).json({
+            success: true,
+            token,
+            user: { id: userId, nombre, email }
+        });
+    } catch (error) {
+        console.error('Error en registro:', error);
+        res.status(500).json({ success: false, error: 'Error en el registro' });
+    }
+});
+
+// Login de usuario
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        // Validar datos
+        if (!email || !password) {
+            return res.status(400).json({ success: false, error: 'Email y contraseña requeridos' });
+        }
+        
+        // Buscar usuario
+        const [users] = await db.execute(
+            'SELECT id, nombre, email, password_hash FROM usuarios WHERE email = ?',
+            [email]
+        );
+        
+        if (users.length === 0) {
+            return res.status(401).json({ success: false, error: 'Email o contraseña incorrectos' });
+        }
+        
+        const user = users[0];
+        
+        // Verificar contraseña
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        
+        if (!isValidPassword) {
+            return res.status(401).json({ success: false, error: 'Email o contraseña incorrectos' });
+        }
+        
+        // Actualizar última conexión
+        await db.execute(
+            'UPDATE usuarios SET ultima_conexion = NOW() WHERE id = ?',
+            [user.id]
+        );
+        
+        // Crear token
+        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+        
+        res.json({
+            success: true,
+            token,
+            user: { id: user.id, nombre: user.nombre, email: user.email }
+        });
+    } catch (error) {
+        console.error('Error en login:', error);
+        res.status(500).json({ success: false, error: 'Error en el login' });
+    }
+});
+
+// Obtener información del usuario actual
+app.get('/api/auth/user', verifyToken, async (req, res) => {
+    try {
+        const [users] = await db.execute(
+            'SELECT id, nombre, email, plan FROM usuarios WHERE id = ?',
+            [req.userId]
+        );
+        
+        if (users.length === 0) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        }
+        
+        res.json({ success: true, user: users[0] });
+    } catch (error) {
+        console.error('Error obteniendo usuario:', error);
+        res.status(500).json({ success: false, error: 'Error del servidor' });
+    }
 });
 
 // Obtener todas las canciones
