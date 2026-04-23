@@ -6,8 +6,21 @@ const appState = {
     duration: 0,
     volume: 0.7,
     songs: [],
-    playlists: []
+    playlists: [],
+    user: null
 };
+
+// Función para obtener headers con autenticación
+function getAuthHeaders() {
+    const token = auth.getToken();
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+}
 
 // DOM
 const elements = {
@@ -32,7 +45,9 @@ const elements = {
 
 async function fetchSongs() {
     try {
-        const response = await fetch('/api/canciones');
+        const response = await fetch('/api/canciones', {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -45,9 +60,12 @@ async function fetchSongs() {
     }
 }
 
-async function fetchPlaylists(userId = 1) {
+async function fetchPlaylists(userId = null) {
     try {
-        const response = await fetch(`/api/usuarios/${userId}/playlists`);
+        const id = userId || appState.user?.id || 1;
+        const response = await fetch(`/api/usuarios/${id}/playlists`, {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -61,7 +79,9 @@ async function fetchPlaylists(userId = 1) {
 
 async function searchSongs(query) {
     try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -219,6 +239,12 @@ function formatTime(seconds) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
+function showError(message) {
+    // Mostrar error en consola (puedes personalizar para mostrar en UI)
+    console.error(message);
+    alert(message);
+}
+
 function updateVolume(value) {
     appState.volume = value / 100;
     console.log('Volumen:', appState.volume);
@@ -256,6 +282,12 @@ function switchView(viewName) {
 elements.playBtn.addEventListener('click', togglePlay);
 elements.volumeSlider.addEventListener('input', (e) => updateVolume(e.target.value));
 
+// Logout
+document.getElementById('logout-btn').addEventListener('click', () => {
+    auth.logout();
+    window.location.href = '/login';
+});
+
 // Busqueda
 elements.searchBtn.addEventListener('click', () => {
     const query = elements.searchInput.value.trim();
@@ -285,9 +317,20 @@ document.querySelectorAll('[data-view]').forEach(link => {
 async function init() {
     console.log('Inicializando rePLAY...');
     
+    // Verificar autenticación
+    if (!auth.isAuthenticated()) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    // Mostrar nombre del usuario
+    const user = auth.getUser();
+    document.getElementById('user-name').textContent = user.nombre || 'Usuario';
+    appState.user = user;
+    
     // Cargar datos iniciales
     await fetchSongs();
-    await fetchPlaylists();
+    await fetchPlaylists(user.id);
     
     console.log('Aplicación lista');
 }
