@@ -3,3 +3,4 @@ diagrama-bd.png
 diagrama-clases.png
 .env
 node_modules
+.secrets/
