@@ -251,6 +251,141 @@ function formatTime(seconds) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
+// PLAYLISTS
+
+async function createPlaylist() {
+    try {
+        const nombre = document.getElementById('playlist-name').value;
+        const descripcion = document.getElementById('playlist-description').value;
+        const es_publica = document.getElementById('playlist-public').checked;
+
+        const response = await fetch('/api/playlists', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                nombre,
+                descripcion: descripcion || null,
+                es_publica
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Playlist creada exitosamente');
+            closeCreatePlaylistModal();
+            
+            // Recargar playlists
+            await fetchPlaylists(appState.user.id);
+            
+            // Limpiar formulario
+            document.getElementById('create-playlist-form').reset();
+        } else {
+            showError(data.error || 'Error al crear la playlist');
+        }
+    } catch (error) {
+        console.error('Error creando playlist:', error);
+        showError('Error al crear la playlist');
+    }
+}
+
+async function loadPlaylist(playlistId) {
+    try {
+        const response = await fetch(`/api/playlists/${playlistId}/canciones`, {
+            headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            // Mostrar canciones de la playlist en la grid
+            renderSongs(data.data);
+            switchView('library');
+        }
+    } catch (error) {
+        console.error('Error cargando playlist:', error);
+        showError('Error al cargar la playlist');
+    }
+}
+
+async function addSongToPlaylist(playlistId, songId) {
+    try {
+        const response = await fetch(`/api/playlists/${playlistId}/canciones`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ cancion_id: songId })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Canción agregada a la playlist');
+        } else {
+            showError(data.error || 'Error al agregar canción');
+        }
+    } catch (error) {
+        console.error('Error agregando canción:', error);
+        showError('Error al agregar canción a la playlist');
+    }
+}
+
+async function deletePlaylist(playlistId) {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta playlist?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/playlists/${playlistId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Playlist eliminada');
+            await fetchPlaylists(appState.user.id);
+        } else {
+            showError(data.error || 'Error al eliminar la playlist');
+        }
+    } catch (error) {
+        console.error('Error eliminando playlist:', error);
+        showError('Error al eliminar la playlist');
+    }
+}
+
+// MODALES Y UI
+
+function openCreatePlaylistModal() {
+    document.getElementById('modal-create-playlist').style.display = 'block';
+}
+
+function closeCreatePlaylistModal() {
+    document.getElementById('modal-create-playlist').style.display = 'none';
+}
+
+// Mostrar/Ocultar mensajes de éxito y error
+function showSuccess(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification success';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+function showError(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification error';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
 // NAVEGACIÓN
 
 function switchView(viewName) {
@@ -326,6 +461,24 @@ document.querySelectorAll('[data-view]').forEach(link => {
         const view = e.currentTarget.getAttribute('data-view');
         switchView(view);
     });
+});
+
+// Modal para crear playlist
+document.getElementById('create-playlist-btn').addEventListener('click', openCreatePlaylistModal);
+document.getElementById('modal-close-btn').addEventListener('click', closeCreatePlaylistModal);
+document.getElementById('modal-cancel-btn').addEventListener('click', closeCreatePlaylistModal);
+
+// Cerrar modal al hacer click afuera
+document.getElementById('modal-create-playlist').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-create-playlist') {
+        closeCreatePlaylistModal();
+    }
+});
+
+// Enviar formulario de crear playlist
+document.getElementById('create-playlist-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    createPlaylist();
 });
 
 // INICIALIZACIÓN
