@@ -137,21 +137,15 @@ INSERT INTO albums (titulo, anio_lanzamiento, tipo) VALUES
 ('Canciones de Medianoche', 2023, 'album'),
 ('Urban Beats Vol.1', 2024, 'ep');
 
---canciones de ejemplo URLs falsas
+-- canciones reales
 INSERT INTO canciones (titulo, duracion, audio_url, genero) VALUES
-('Amanecer Digital', 245, 's3://replay-bucket/songs/amanecer_digital.mp3', 'Electrónica'),
-('Susurros Nocturnos', 198, 's3://replay-bucket/songs/susurros_nocturnos.mp3', 'Folk'),
-('Ritmo Urbano', 210, 's3://replay-bucket/songs/ritmo_urbano.mp3', 'Urbano'),
-('Ecos del Pasado', 267, 's3://replay-bucket/songs/ecos_pasado.mp3', 'Electrónica'),
-('Caminos de Luna', 223, 's3://replay-bucket/songs/caminos_luna.mp3', 'Folk');
+('Focu Ranni', 245, '/music/Focu \'Ranni.mp3', 'Elden Pop'),
+('Jeanne', 198, '/music/Jeanne.mp3', 'Acoustic');
 
 -- relacion canciones con artistas
 INSERT INTO cancion_artista (cancion_id, artista_id, tipo) VALUES
 (1, 1, 'principal'),
-(2, 2, 'principal'),
-(3, 3, 'principal'),
-(4, 1, 'principal'),
-(5, 2, 'principal');
+(2, 2, 'principal');
 
 -- relacion canciones con álbumes
 INSERT INTO cancion_album (cancion_id, album_id, numero_pista) VALUES
