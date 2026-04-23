@@ -82,6 +82,14 @@ class Auth {
 // Instancia global de autenticación
 const auth = new Auth();
 
+async function handleGoogleLogin() {
+    alert('google login se configurara proximamente');
+}
+
+async function handleAppleLogin() {
+    alert('apple login se configurara proximamente');
+}
+
 // Lógica de UI en login.html
 if (document.getElementById('login-form')) {
     // Cambiar entre tabs de login y registro

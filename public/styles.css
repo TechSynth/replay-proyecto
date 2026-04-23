@@ -414,7 +414,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #1e3a5f 0%, var(--background-dark) 100%);
+    background-color: #000000;
 }
 
 .auth-container {
@@ -538,6 +538,61 @@ body {
 
 .auth-btn:active {
     transform: scale(0.98);
+}
+
+/* Social Auth Styles */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #888;
+}
+
+.auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #333;
+}
+
+.auth-divider span {
+    padding: 0 10px;
+    font-size: 0.85rem;
+}
+
+.social-auth {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.social-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.2s;
+    font-size: 14px;
+}
+
+.google-btn {
+    background-color: #fff;
+    color: #000;
+}
+
+.apple-btn {
+    background-color: #000;
+    color: #fff;
+}
+
+.social-btn:hover {
+    transform: scale(1.02);
 }
 
 .auth-error {

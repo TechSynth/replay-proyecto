@@ -36,6 +36,19 @@
 
                 <button type="submit" class="auth-btn">Iniciar Sesión</button>
 
+                <div class="auth-divider">
+                    <span>O continuar con</span>
+                </div>
+
+                <div class="social-auth">
+                    <button type="button" class="social-btn google-btn" onclick="handleGoogleLogin()">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                    <button type="button" class="social-btn apple-btn" onclick="handleAppleLogin()">
+                        <i class="fab fa-apple"></i> Apple
+                    </button>
+                </div>
+
                 <div id="login-error" class="auth-error" style="display: none;"></div>
             </form>
 
@@ -62,6 +75,19 @@
                 </div>
 
                 <button type="submit" class="auth-btn">Registrarse</button>
+
+                <div class="auth-divider">
+                    <span>O registrarse con</span>
+                </div>
+
+                <div class="social-auth">
+                    <button type="button" class="social-btn google-btn" onclick="handleGoogleLogin()">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                    <button type="button" class="social-btn apple-btn" onclick="handleAppleLogin()">
+                        <i class="fab fa-apple"></i> Apple
+                    </button>
+                </div>
 
                 <div id="register-error" class="auth-error" style="display: none;"></div>
             </form>
