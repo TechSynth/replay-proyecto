@@ -1,6 +1,111 @@
 const pool = require('../config/db');
 const fs = require('fs');
 const path = require('path');
+// documentacion multer: https://github.com/expressjs/multer
+const multer = require('multer');
+// documentacion aws sdk s3: https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/welcome.html
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+
+// configuracion s3
+const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        sessionToken: process.env.AWS_SESSION_TOKEN // necesario para aws academy
+    }
+});
+
+// configuracion multer (en memoria)
+const storage = multer.memoryStorage();
+exports.upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10mb limite
+});
+
+// middleware para multiples campos
+exports.uploadFields = exports.upload.fields([
+    { name: 'audio', maxCount: 1 },
+    { name: 'imagen', maxCount: 1 }
+]);
+
+exports.uploadSong = async (req, res) => {
+    try {
+        const usuario_id = req.user.id;
+        const { titulo, artista } = req.body;
+
+        if (!req.files || !req.files['audio']) {
+            return res.status(400).json({ success: false, error: 'no se ha subido el archivo de audio' });
+        }
+
+        const audioFile = req.files['audio'][0];
+        const imageFile = req.files['imagen'] ? req.files['imagen'][0] : null;
+
+        // verificar cuota de 3 canciones
+        const [countRows] = await pool.execute(
+            'SELECT COUNT(*) as total FROM canciones WHERE subida_por_usuario_id = ?',
+            [usuario_id]
+        );
+
+        if (countRows[0].total >= 3) {
+            return res.status(403).json({ success: false, error: 'limite de 3 canciones alcanzado' });
+        }
+
+        const bucketName = 'replay-music-tfg';
+        
+        // 1. subir audio a s3
+        const audioFileName = `uploads/audio/${Date.now()}-${audioFile.originalname}`;
+        await s3.send(new PutObjectCommand({
+            Bucket: bucketName,
+            Key: audioFileName,
+            Body: audioFile.buffer,
+            ContentType: audioFile.mimetype,
+            ACL: 'public-read'
+        }));
+        const audioUrl = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${audioFileName}`;
+
+        // 2. subir imagen si existe
+        let imageUrl = null;
+        if (imageFile) {
+            const imageFileName = `uploads/images/${Date.now()}-${imageFile.originalname}`;
+            await s3.send(new PutObjectCommand({
+                Bucket: bucketName,
+                Key: imageFileName,
+                Body: imageFile.buffer,
+                ContentType: imageFile.mimetype,
+                ACL: 'public-read'
+            }));
+            imageUrl = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${imageFileName}`;
+        }
+
+        // guardar en bd
+        const [result] = await pool.execute(
+            'INSERT INTO canciones (titulo, duracion, audio_url, imagen_url, subida_por_usuario_id) VALUES (?, ?, ?, ?, ?)',
+            [titulo || audioFile.originalname, 0, audioUrl, imageUrl, usuario_id]
+        );
+
+        // si hay artista, vincularlo (o crear uno genérico si no existe)
+        if (artista) {
+            const [artistas] = await pool.execute('SELECT id FROM artistas WHERE nombre = ?', [artista]);
+            let artistaId;
+            if (artistas.length === 0) {
+                const [newArt] = await pool.execute('INSERT INTO artistas (nombre) VALUES (?)', [artista]);
+                artistaId = newArt.insertId;
+            } else {
+                artistaId = artistas[0].id;
+            }
+            await pool.execute(
+                'INSERT INTO cancion_artista (cancion_id, artista_id, tipo) VALUES (?, ?, ?)',
+                [result.insertId, artistaId, 'principal']
+            );
+        }
+
+        res.json({ success: true, data: { id: result.insertId, audio_url: audioUrl } });
+    } catch (err) {
+        console.error('error en subida:', err);
+        res.status(500).json({ success: false, error: 'error al subir a s3' });
+    }
+};
 
 exports.getAllSongs = async (req, res) => {
     try {
@@ -114,6 +219,7 @@ exports.streamSong = async (req, res) => {
 
         const stat = fs.statSync(musicPath);
         const fileSize = stat.size;
+        // documentacion peticiones de rango: https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
         const range = req.headers.range;
 
         if (range) {

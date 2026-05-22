@@ -5,6 +5,8 @@ const authRoutes = require('./src/routes/authRoutes');
 const musicRoutes = require('./src/routes/musicRoutes');
 const runMigrations = require('./src/config/migrate');
 
+// inicializar servidor express
+// documentacion: https://expressjs.com/
 const app = express();
 const PORT = process.env.PORT || 3000;
 

@@ -605,3 +605,72 @@ body {
     margin-top: 12px;
     text-align: center;
 }
+
+/* ====== ESTILOS DE SUBIDA ====== */
+
+.upload-container {
+    max-width: 600px;
+    background-color: var(--background-light);
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.upload-info {
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: rgba(29, 185, 84, 0.1);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.standard-form .form-group {
+    margin-bottom: 24px;
+}
+
+.standard-form label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.standard-form input[type="text"],
+.standard-form input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    background-color: #282828;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: white;
+    outline: none;
+}
+
+.standard-form input[type="text"]:focus {
+    border-color: var(--primary-color);
+}
+
+.upload-status {
+    margin-top: 24px;
+    padding: 12px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.upload-status.success {
+    background-color: rgba(29, 185, 84, 0.2);
+    color: var(--primary-color);
+}
+
+.upload-status.error {
+    background-color: rgba(255, 59, 48, 0.2);
+    color: #ff3b30;
+}
+
+.upload-status.loading {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}

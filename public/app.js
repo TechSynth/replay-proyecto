@@ -41,10 +41,52 @@ const elements = {
     playlistList: document.getElementById('playlist-list'),
     homeView: document.getElementById('home-view'),
     searchView: document.getElementById('search-view'),
-    libraryView: document.getElementById('library-view')
+    libraryView: document.getElementById('library-view'),
+    uploadView: document.getElementById('upload-view'),
+    uploadForm: document.getElementById('upload-form'),
+    uploadStatus: document.getElementById('upload-status')
 };
 
 // api
+
+async function uploadSong(formData) {
+    elements.uploadStatus.textContent = 'subiendo canción a s3...';
+    elements.uploadStatus.className = 'upload-status loading';
+    elements.uploadStatus.style.display = 'block';
+    
+    const submitBtn = document.getElementById('upload-submit-btn');
+    submitBtn.disabled = true;
+
+    try {
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: {
+                // no ponemos content-type para que el navegador ponga el boundary del form-data
+                'Authorization': `Bearer ${auth.getToken()}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            elements.uploadStatus.textContent = '¡canción subida con éxito!';
+            elements.uploadStatus.className = 'upload-status success';
+            elements.uploadForm.reset();
+            // recargar canciones
+            await fetchSongs();
+        } else {
+            elements.uploadStatus.textContent = `error: ${data.error}`;
+            elements.uploadStatus.className = 'upload-status error';
+        }
+    } catch (error) {
+        console.error('error en subida:', error);
+        elements.uploadStatus.textContent = 'error de conexión con el servidor';
+        elements.uploadStatus.className = 'upload-status error';
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
 
 async function fetchSongs() {
     try {
@@ -121,11 +163,15 @@ function createSongCard(song) {
     const seconds = song.duracion % 60;
     const duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     
-    // imagen local
-    const imageUrl = '/img/portadas.jpg';
+    // si no hay imagen_url, usar fondo negro con icono
+    const imageUrl = song.imagen_url || '';
+    const imageStyle = imageUrl 
+        ? `background-image: url('${imageUrl}'); background-size: cover; background-position: center;` 
+        : `background-color: #000; display: flex; align-items: center; justify-content: center;`;
     
     card.innerHTML = `
-        <div class="song-card-image" style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;">
+        <div class="song-card-image" style="${imageStyle}">
+            ${!imageUrl ? '<i class="fas fa-music" style="font-size: 48px; color: #333;"></i>' : ''}
         </div>
         <div class="song-card-title">${song.titulo}</div>
         <div class="song-card-artist">${song.artista_nombre || 'artista desconocido'}</div>
@@ -166,6 +212,7 @@ function renderSearchResults(results) {
 }
 
 // reproductor audio
+// documentacion audio api: https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement
 const audioPlayer = new Audio();
 
 function playSong(song) {
@@ -185,7 +232,18 @@ function playSong(song) {
     // actualizar interfaz
     elements.currentSongTitle.textContent = song.titulo;
     elements.currentSongArtist.textContent = song.artista_nombre || 'artista desconocido';
-    elements.songImage.style.backgroundImage = "url('/img/portadas.jpg')";
+    
+    // mostrar caratula o fondo negro en el reproductor
+    if (song.imagen_url) {
+        elements.songImage.style.backgroundImage = `url('${song.imagen_url}')`;
+        elements.songImage.style.backgroundColor = 'transparent';
+        elements.songImage.innerHTML = '';
+    } else {
+        elements.songImage.style.backgroundImage = 'none';
+        elements.songImage.style.backgroundColor = '#000';
+        elements.songImage.innerHTML = '<i class="fas fa-music" style="color: #333;"></i>';
+    }
+    
     elements.songImage.style.backgroundSize = "cover";
     elements.songImage.style.backgroundPosition = "center";
     document.querySelector('#play-btn i').className = 'fas fa-pause';
@@ -257,6 +315,7 @@ function switchView(viewName) {
     elements.homeView.style.display = 'none';
     elements.searchView.style.display = 'none';
     elements.libraryView.style.display = 'none';
+    elements.uploadView.style.display = 'none';
     
     switch(viewName) {
         case 'home':
@@ -267,6 +326,9 @@ function switchView(viewName) {
             break;
         case 'library':
             elements.libraryView.style.display = 'block';
+            break;
+        case 'upload':
+            elements.uploadView.style.display = 'block';
             break;
     }
     
@@ -297,6 +359,28 @@ elements.playBtn.addEventListener('click', togglePlay);
 elements.prevBtn.addEventListener('click', prevSong);
 elements.nextBtn.addEventListener('click', nextSong);
 elements.volumeSlider.addEventListener('input', (e) => updateVolume(e.target.value));
+
+// formulario subida
+elements.uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById('upload-title').value;
+    const artist = document.getElementById('upload-artist').value;
+    const audioFile = document.getElementById('upload-file').files[0];
+    const imageFile = document.getElementById('upload-image').files[0];
+    
+    if (!audioFile) return;
+    
+    const formData = new FormData();
+    formData.append('titulo', title);
+    formData.append('artista', artist);
+    formData.append('audio', audioFile);
+    if (imageFile) {
+        formData.append('imagen', imageFile);
+    }
+    
+    await uploadSong(formData);
+});
 
 // logout
 document.getElementById('logout-btn').addEventListener('click', () => {

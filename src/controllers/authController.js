@@ -1,7 +1,10 @@
 const pool = require('../config/db');
+// documentacion bcrypt: https://github.com/kelektiv/node.bcrypt.js
 const bcrypt = require('bcryptjs');
+// documentacion jwt: https://jwt.io/
 const jwt = require('jsonwebtoken');
 
+// documentacion verificacion google: https://developers.google.com/identity/gsi/web/guides/verify-google-id-token
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
