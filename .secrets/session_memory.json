@@ -1,0 +1,21 @@
+{
+  "project_preferences": {
+    "tone": "senior_engineer_direct",
+    "restrictions": ["no_emojis", "no_accents", "no_ai_style_markers"],
+    "architecture": "modular_src_structure",
+    "theme": "pure_black_bg_000000"
+  },
+  "implemented_features": [
+    "real_html5_audio_player",
+    "interactive_progress_bar",
+    "automatic_next_song",
+    "modular_auth_controllers_routes",
+    "google_apple_social_login_ui_and_placeholders",
+    "automatic_db_migrations"
+  ],
+  "last_known_state": {
+    "branch": "feature_soul",
+    "merged_to_main": true,
+    "db_status": "updated_with_real_songs"
+  }
+}

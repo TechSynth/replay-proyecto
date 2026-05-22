@@ -22,7 +22,13 @@
                 <button class="auth-tab" data-tab="register">Registrarse</button>
             </div>
 
-            <!-- Form de Login -->
+            <div id="g_id_onload"
+                data-client_id="754241170479-91lcr6ms1npji0gf93a6hea8gnlg34ad.apps.googleusercontent.com"
+                data-callback="handleGoogleLogin"
+                data-auto_prompt="false">
+            </div>
+
+            <!-- form login -->
             <form id="login-form" class="auth-form active">
                 <div class="form-group">
                     <label for="login-email">Correo Electrónico</label>
@@ -41,9 +47,7 @@
                 </div>
 
                 <div class="social-auth">
-                    <button type="button" class="social-btn google-btn" onclick="handleGoogleLogin()">
-                        <i class="fab fa-google"></i> Google
-                    </button>
+                    <div class="g_id_signin" data-type="standard"></div>
                     <button type="button" class="social-btn apple-btn" onclick="handleAppleLogin()">
                         <i class="fab fa-apple"></i> Apple
                     </button>
@@ -52,7 +56,7 @@
                 <div id="login-error" class="auth-error" style="display: none;"></div>
             </form>
 
-            <!-- Form de Registro -->
+            <!-- form registro -->
             <form id="register-form" class="auth-form">
                 <div class="form-group">
                     <label for="register-name">Nombre Completo</label>
@@ -81,9 +85,7 @@
                 </div>
 
                 <div class="social-auth">
-                    <button type="button" class="social-btn google-btn" onclick="handleGoogleLogin()">
-                        <i class="fab fa-google"></i> Google
-                    </button>
+                    <div class="g_id_signin" data-type="standard"></div>
                     <button type="button" class="social-btn apple-btn" onclick="handleAppleLogin()">
                         <i class="fab fa-apple"></i> Apple
                     </button>
@@ -94,6 +96,7 @@
         </div>
     </div>
 
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="auth.js"></script>
 </body>
 
