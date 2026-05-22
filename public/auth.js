@@ -1,4 +1,4 @@
-// Manejo de Autenticación
+// manejo auth
 class Auth {
     constructor() {
         this.token = localStorage.getItem('token');
@@ -77,22 +77,51 @@ class Auth {
     getToken() {
         return this.token;
     }
+async googleLogin(token) {
+    try {
+        const response = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ token })
+        });
+        const data = await response.json();
+        if (data.success) {
+            this.saveSession(data.token, data.user);
+            return { success: true };
+        }
+        return { success: false, error: data.error };
+    } catch (error) {
+        return { success: false, error: 'error de conexion' };
+    }
 }
 
-// Instancia global de autenticación
+saveSession(token, user) {
+    this.token = token;
+    this.user = user;
+    localStorage.setItem('token', this.token);
+    localStorage.setItem('user', JSON.stringify(this.user));
+}
+
+}
+
+// instancia auth
 const auth = new Auth();
 
-async function handleGoogleLogin() {
-    alert('google login se configurara proximamente');
+async function handleGoogleLogin(response) {
+// callback google
+const result = await auth.googleLogin(response.credential);
+if (result.success) {
+    window.location.href = '/';
+} else {
+    alert('error en google login: ' + result.error);
+}
 }
 
-async function handleAppleLogin() {
-    alert('apple login se configurara proximamente');
-}
-
-// Lógica de UI en login.html
+// ui login
 if (document.getElementById('login-form')) {
-    // Cambiar entre tabs de login y registro
+    // cambiar tabs
     document.querySelectorAll('.auth-tab').forEach(tab => {
         tab.addEventListener('click', (e) => {
             const tabName = e.target.dataset.tab;
@@ -105,7 +134,7 @@ if (document.getElementById('login-form')) {
         });
     });
 
-    // Manejo de formulario de login
+    // form login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -125,7 +154,7 @@ if (document.getElementById('login-form')) {
         }
     });
 
-    // Manejo de formulario de registro
+    // form registro
     document.getElementById('register-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         

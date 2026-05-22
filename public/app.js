@@ -1,4 +1,4 @@
-// Estado de la aplicación
+// estado de la app
 const appState = {
     currentSong: null,
     isPlaying: false,
@@ -10,7 +10,7 @@ const appState = {
     user: null
 };
 
-// Función para obtener headers con autenticación
+// funcion para los headers
 function getAuthHeaders() {
     const token = auth.getToken();
     const headers = {
@@ -22,7 +22,7 @@ function getAuthHeaders() {
     return headers;
 }
 
-// DOM
+// dom
 const elements = {
     songsGrid: document.getElementById('songs-grid'),
     searchInput: document.getElementById('search-input'),
@@ -44,7 +44,7 @@ const elements = {
     libraryView: document.getElementById('library-view')
 };
 
-//API
+// api
 
 async function fetchSongs() {
     try {
@@ -96,7 +96,7 @@ async function searchSongs(query) {
     }
 }
 
-//Render
+// render
 
 function renderSongs(songs) {
     elements.songsGrid.innerHTML = '';
@@ -121,7 +121,7 @@ function createSongCard(song) {
     const seconds = song.duracion % 60;
     const duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     
-    // usando la imagen local de la carpeta img
+    // imagen local
     const imageUrl = '/img/portadas.jpg';
     
     card.innerHTML = `
@@ -165,7 +165,7 @@ function renderSearchResults(results) {
     });
 }
 
-// Audio Player Real
+// reproductor audio
 const audioPlayer = new Audio();
 
 function playSong(song) {
@@ -177,8 +177,8 @@ function playSong(song) {
     appState.currentSong = song;
     appState.isPlaying = true;
     
-    // cargar url directamente desde la base de datos
-    audioPlayer.src = song.audio_url;
+    // cargar streaming
+    audioPlayer.src = `/api/music/stream/${song.id}`;
     audioPlayer.volume = appState.volume;
     audioPlayer.play().catch(err => console.error('error al reproducir:', err));
     
@@ -190,7 +190,7 @@ function playSong(song) {
     elements.songImage.style.backgroundPosition = "center";
     document.querySelector('#play-btn i').className = 'fas fa-pause';
     
-    // eventos del audio
+    // eventos audio
     audioPlayer.ontimeupdate = () => {
         appState.currentTime = audioPlayer.currentTime;
         appState.duration = audioPlayer.duration || song.duracion;
@@ -251,7 +251,7 @@ function formatTime(seconds) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-// NAVEGACIÓN
+// navegacion
 
 function switchView(viewName) {
     elements.homeView.style.display = 'none';
@@ -270,16 +270,16 @@ function switchView(viewName) {
             break;
     }
     
-    //Actualizar navegación activa
+    // actualizar navegacion
     document.querySelectorAll('.main-nav li').forEach(li => {
         li.classList.remove('active');
     });
     document.querySelector(`[data-view="${viewName}"]`).parentElement.classList.add('active');
 }
 
-// Event Listeners
+// listeners
 
-// Hacer que la barra de progreso sea interactiva
+// progreso interactivo
 elements.progressFilled.parentElement.addEventListener('click', (e) => {
     if (!appState.currentSong) return;
     
@@ -292,19 +292,19 @@ elements.progressFilled.parentElement.addEventListener('click', (e) => {
     audioPlayer.currentTime = seekTime;
 });
 
-// Controles del reproductor
+// controles
 elements.playBtn.addEventListener('click', togglePlay);
 elements.prevBtn.addEventListener('click', prevSong);
 elements.nextBtn.addEventListener('click', nextSong);
 elements.volumeSlider.addEventListener('input', (e) => updateVolume(e.target.value));
 
-// Logout
+// logout
 document.getElementById('logout-btn').addEventListener('click', () => {
     auth.logout();
     window.location.href = '/login';
 });
 
-// Busqueda
+// busqueda
 elements.searchBtn.addEventListener('click', () => {
     const query = elements.searchInput.value.trim();
     if (query) {
@@ -319,7 +319,7 @@ elements.searchInput.addEventListener('keypress', (e) => {
     }
 });
 
-// Navegación
+// navegacion
 document.querySelectorAll('[data-view]').forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -328,30 +328,30 @@ document.querySelectorAll('[data-view]').forEach(link => {
     });
 });
 
-// INICIALIZACIÓN
+// inicializacion
 
 async function init() {
     console.log('Inicializando rePLAY...');
     
-    // Verificar autenticación
+    // verificar auth
     if (!auth.isAuthenticated()) {
         window.location.href = '/login';
         return;
     }
     
-    // Mostrar nombre del usuario
+    // mostrar nombre
     const user = auth.getUser();
     document.getElementById('user-name').textContent = user.nombre || 'Usuario';
     appState.user = user;
     
-    // Cargar datos iniciales
+    // cargar datos
     await fetchSongs();
     await fetchPlaylists(user.id);
     
     console.log('Aplicación lista');
 }
 
-// if dom rdy
+// dom listo
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

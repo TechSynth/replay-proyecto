@@ -2,6 +2,9 @@ const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 const generateToken = (id, email) => {
@@ -20,7 +23,7 @@ exports.register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const [result] = await pool.execute(
-            'INSERT INTO usuarios (nombre, email, password_hash) VALUES (?, ?, ?)',
+            'INSERT INTO usuarios (nombre, email, password_hash, auth_provider) VALUES (?, ?, ?, "local")',
             [nombre, email, hashedPassword]
         );
 
@@ -34,7 +37,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const [users] = await pool.execute('SELECT * FROM usuarios WHERE email = ?', [email]);
+        const [users] = await pool.execute('SELECT * FROM usuarios WHERE email = ? AND auth_provider = "local"', [email]);
         
         if (users.length === 0) return res.status(401).json({ success: false, error: 'usuario no encontrado' });
 
@@ -50,13 +53,40 @@ exports.login = async (req, res) => {
 };
 
 exports.googleLogin = async (req, res) => {
-    // se completara cuando tengamos las apis
-    res.json({ success: false, message: 'google login pendiente de configuracion' });
-};
+    try {
+        const { token } = req.body;
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+        const payload = ticket.getPayload();
+        const { sub: provider_id, email, name: nombre } = payload;
 
-exports.appleLogin = async (req, res) => {
-    // se completara cuando tengamos las apis
-    res.json({ success: false, message: 'apple login pendiente de configuracion' });
+        // buscar si existe
+        let [users] = await pool.execute('SELECT * FROM usuarios WHERE email = ?', [email]);
+        let user;
+
+        if (users.length === 0) {
+            // nuevo usuario
+            const [result] = await pool.execute(
+                'INSERT INTO usuarios (nombre, email, auth_provider, provider_id) VALUES (?, ?, "google", ?)',
+                [nombre, email, provider_id]
+            );
+            user = { id: result.insertId, nombre, email };
+        } else {
+            user = users[0];
+            // actualizar id si falta
+            if (!user.provider_id) {
+                await pool.execute('UPDATE usuarios SET auth_provider = "google", provider_id = ? WHERE id = ?', [provider_id, user.id]);
+            }
+        }
+
+        const jwtToken = generateToken(user.id, user.email);
+        res.json({ success: true, token: jwtToken, user: { id: user.id, nombre: user.nombre, email: user.email } });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'error en login con google' });
+    }
 };
 
 exports.getCurrentUser = async (req, res) => {
