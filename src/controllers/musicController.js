@@ -93,18 +93,23 @@ exports.search = async (req, res) => {
         res.status(500).json({ success: false, error: 'error en la busqueda' });
     }
 };
-
 exports.streamSong = async (req, res) => {
     try {
         const { id } = req.params;
         const [songs] = await pool.execute('SELECT audio_url FROM canciones WHERE id = ?', [id]);
-        
+
         if (songs.length === 0) return res.status(404).send('no encontrado');
 
         const song = songs[0];
-        // las canciones estan en public/music/nombre.mp3
+
+        // si es una url de s3 (empieza por http), redirigir directamente
+        if (song.audio_url.startsWith('http')) {
+            return res.redirect(song.audio_url);
+        }
+
+        // si es local, buscar en la carpeta public
         const musicPath = path.join(__dirname, '../../public', song.audio_url);
-        
+
         if (!fs.existsSync(musicPath)) return res.status(404).send('archivo no encontrado');
 
         const stat = fs.statSync(musicPath);
