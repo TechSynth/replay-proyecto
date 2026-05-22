@@ -121,6 +121,8 @@ CREATE TABLE favoritos (
 
 -- data
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- usuarios prueba
 INSERT INTO usuarios (nombre, email, password_hash, plan) VALUES
 ('Ayman Lemrabet', 'ayman@replay.com', '$2b$10$example_hash_1', 'premium'),
@@ -168,3 +170,5 @@ INSERT INTO playlist_cancion (playlist_id, cancion_id, orden) VALUES
 (1, 4, 2),
 (2, 2, 1),
 (2, 5, 2);
+
+SET FOREIGN_KEY_CHECKS = 1;
