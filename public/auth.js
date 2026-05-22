@@ -97,26 +97,6 @@ async googleLogin(token) {
     }
 }
 
-async appleLogin(mockData) {
-    try {
-        const response = await fetch('/api/auth/apple', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(mockData)
-        });
-        const data = await response.json();
-        if (data.success) {
-            this.saveSession(data.token, data.user);
-            return { success: true };
-        }
-        return { success: false, error: data.error };
-    } catch (error) {
-        return { success: false, error: 'error de conexion' };
-    }
-}
-
 saveSession(token, user) {
     this.token = token;
     this.user = user;
@@ -136,21 +116,6 @@ if (result.success) {
     window.location.href = '/';
 } else {
     alert('error en google login: ' + result.error);
-}
-}
-
-async function handleAppleLogin() {
-// sim para tfg
-const mockData = {
-    email: 'testapple@replay.com',
-    nombre: 'usuario apple',
-    user_id: 'apple_123456'
-};
-const result = await auth.appleLogin(mockData);
-if (result.success) {
-    window.location.href = '/';
-} else {
-    alert('error en apple login: ' + result.error);
 }
 }
 

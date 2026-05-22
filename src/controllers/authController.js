@@ -89,31 +89,6 @@ exports.googleLogin = async (req, res) => {
     }
 };
 
-exports.appleLogin = async (req, res) => {
-    // sim login apple
-    try {
-        const { email, nombre, user_id } = req.body;
-        
-        let [users] = await pool.execute('SELECT * FROM usuarios WHERE email = ?', [email]);
-        let user;
-
-        if (users.length === 0) {
-            const [result] = await pool.execute(
-                'INSERT INTO usuarios (nombre, email, auth_provider, provider_id) VALUES (?, ?, "apple", ?)',
-                [nombre, email, user_id]
-            );
-            user = { id: result.insertId, nombre, email };
-        } else {
-            user = users[0];
-        }
-
-        const jwtToken = generateToken(user.id, user.email);
-        res.json({ success: true, token: jwtToken, user: { id: user.id, nombre: user.nombre, email: user.email } });
-    } catch (err) {
-        res.status(500).json({ success: false, error: 'error en login con apple' });
-    }
-};
-
 exports.getCurrentUser = async (req, res) => {
     try {
         const [users] = await pool.execute('SELECT id, nombre, email, plan FROM usuarios WHERE id = ?', [req.user.id]);
