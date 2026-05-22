@@ -37,6 +37,12 @@
                             <span>Mi Biblioteca</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="#" data-view="upload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Subir Música</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
 
@@ -82,6 +88,37 @@
                     <h2>Mi Biblioteca</h2>
                     <div class="library-content">
                         <p>Aquí aparecerán tus playlists y canciones favoritas</p>
+                    </div>
+                </section>
+
+                <section id="upload-view" style="display: none;">
+                    <h2>Subir Nueva Canción</h2>
+                    <div class="upload-container">
+                        <div class="upload-info">
+                            <p>puedes subir hasta 3 canciones (máximo 10mb por archivo).</p>
+                        </div>
+                        <form id="upload-form" class="standard-form">
+                            <div class="form-group">
+                                <label for="upload-title">título de la canción</label>
+                                <input type="text" id="upload-title" placeholder="ej: mi gran éxito" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="upload-artist">artista</label>
+                                <input type="text" id="upload-artist" placeholder="ej: nombre del artista">
+                            </div>
+                            <div class="form-group">
+                                <label for="upload-file">archivo de audio (.mp3)</label>
+                                <input type="file" id="upload-file" accept="audio/mpeg" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="upload-image">carátula (opcional, .jpg o .png)</label>
+                                <input type="file" id="upload-image" accept="image/*">
+                            </div>
+                            <button type="submit" class="auth-btn" id="upload-submit-btn">
+                                <i class="fas fa-upload"></i> subir a la nube
+                            </button>
+                        </form>
+                        <div id="upload-status" class="upload-status" style="display: none;"></div>
                     </div>
                 </section>
             </div>

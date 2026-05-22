@@ -109,6 +109,7 @@ saveSession(token, user) {
 // instancia auth
 const auth = new Auth();
 
+// documentacion google identity services: https://developers.google.com/identity/gsi/web/guides/overview
 async function handleGoogleLogin(response) {
 // callback google
 const result = await auth.googleLogin(response.credential);

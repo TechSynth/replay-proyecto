@@ -43,12 +43,15 @@ CREATE TABLE canciones (
     titulo VARCHAR(255) NOT NULL,
     duracion INT NOT NULL COMMENT 'duracion en segundos',
     audio_url VARCHAR(500) NOT NULL COMMENT 'url del archivo',
+    imagen_url VARCHAR(500) NULL,
     numero_reproducciones INT DEFAULT 0,
     fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    subida_por_usuario_id INT NULL,
     genero VARCHAR(100),
     letra TEXT,
     INDEX idx_titulo (titulo),
-    INDEX idx_genero (genero)
+    INDEX idx_genero (genero),
+    FOREIGN KEY (subida_por_usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- relacion cancion-artista
