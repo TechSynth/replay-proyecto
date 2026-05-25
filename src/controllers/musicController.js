@@ -29,19 +29,20 @@ exports.uploadFields = exports.upload.fields([
     { name: 'imagen', maxCount: 1 }
 ]);
 
+// funcion para limpiar nombres de archivos (quitar espacios y caracteres raros)
+const slugify = (text) => {
+    return text.toString().toLowerCase()
+        .replace(/\s+/g, '-')           // reemplazar espacios por guiones
+        .replace(/[^\w\-]+/g, '')       // quitar caracteres no alfanumericos
+        .replace(/\-\-+/g, '-')         // quitar guiones dobles
+        .replace(/^-+/, '')             // quitar guiones al inicio
+        .replace(/-+$/, '');            // quitar guiones al final
+};
+
 exports.uploadSong = async (req, res) => {
     try {
         const usuario_id = req.user.id;
         const { titulo, artista } = req.body;
-
-        // log de depuracion
-        console.log('iniciando subida para usuario:', usuario_id);
-        console.log('variables aws presentes:', {
-            region: !!process.env.AWS_REGION,
-            key: !!process.env.AWS_ACCESS_KEY_ID,
-            secret: !!process.env.AWS_SECRET_ACCESS_KEY,
-            token: !!process.env.AWS_SESSION_TOKEN
-        });
 
         if (!req.files || !req.files['audio']) {
             return res.status(400).json({ success: false, error: 'no se ha subido el archivo de audio' });
@@ -57,58 +58,51 @@ exports.uploadSong = async (req, res) => {
         );
 
         if (countRows[0].total >= 3) {
-            console.log('cuota excedida para usuario:', usuario_id);
             return res.status(403).json({ success: false, error: 'limite de 3 canciones alcanzado' });
         }
 
         const bucketName = 'replay-music-tfg';
+        const timestamp = Date.now();
+        const baseName = slugify(titulo || 'cancion');
         
-        // 1. subir audio a s3
-        const audioFileName = `uploads/audio/${Date.now()}-${audioFile.originalname}`;
-        console.log('subiendo audio a s3:', audioFileName);
+        // 1. subir audio a s3 con nombre limpio
+        const audioFileName = `uploads/audio/${timestamp}-${baseName}.mp3`;
         
-        try {
-            await s3.send(new PutObjectCommand({
-                Bucket: bucketName,
-                Key: audioFileName,
-                Body: audioFile.buffer,
-                ContentType: audioFile.mimetype,
-                ACL: 'public-read'
-            }));
-        } catch (s3Error) {
-            console.error('error especifico de s3 (audio):', s3Error);
-            throw s3Error;
-        }
+        await s3.send(new PutObjectCommand({
+            Bucket: bucketName,
+            Key: audioFileName,
+            Body: audioFile.buffer,
+            ContentType: 'audio/mpeg',
+            ACL: 'public-read'
+        }));
 
         const audioUrl = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${audioFileName}`;
 
-        // 2. subir imagen si existe
+        // 2. subir imagen si existe con nombre limpio
         let imageUrl = null;
         if (imageFile) {
-            const imageFileName = `uploads/images/${Date.now()}-${imageFile.originalname}`;
-            console.log('subiendo imagen a s3:', imageFileName);
+            const imageFileName = `uploads/images/${timestamp}-${baseName}.jpg`;
             try {
                 await s3.send(new PutObjectCommand({
                     Bucket: bucketName,
                     Key: imageFileName,
                     Body: imageFile.buffer,
-                    ContentType: imageFile.mimetype,
+                    ContentType: 'image/jpeg',
                     ACL: 'public-read'
                 }));
                 imageUrl = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${imageFileName}`;
             } catch (s3Error) {
-                console.error('error especifico de s3 (imagen):', s3Error);
-                // no bloqueamos si falla la imagen, pero lo logueamos
+                console.error('error al subir carátula:', s3Error);
             }
         }
 
         // guardar en bd
         const [result] = await pool.execute(
             'INSERT INTO canciones (titulo, duracion, audio_url, imagen_url, subida_por_usuario_id) VALUES (?, ?, ?, ?, ?)',
-            [titulo || audioFile.originalname, 0, audioUrl, imageUrl, usuario_id]
+            [titulo || 'sin título', 0, audioUrl, imageUrl, usuario_id]
         );
         
-        console.log('subida completada con exito. id:', result.insertId);
+        console.log(`cancion subida: ${titulo} (id: ${result.insertId})`);
 
         // si hay artista, vincularlo (o crear uno genérico si no existe)
         if (artista) {
