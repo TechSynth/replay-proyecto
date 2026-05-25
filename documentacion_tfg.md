@@ -27,3 +27,8 @@
 - implementación de pm2 como gestor de procesos en producción para asegurar que el servicio de node.js se reinicie automáticamente ante fallos o reinicios de la máquina (startup configuration).
 - desarrollo de un script de despliegue continuo (bash) para la automatización de la integración de código desde github.
 - configuración de un cron job (crontab) en linux para ejecutar la sincronización automática de código cada 5 minutos, garantizando actualizaciones en vivo sin intervención manual.
+- implementación de un sistema de subida de archivos (multer) para permitir a los usuarios cargar su propia música directamente desde la web.
+- integración del sdk v3 de amazon s3 para el almacenamiento automatizado de archivos multimedia y carátulas personalizadas.
+- desarrollo de una lógica de cuotas por usuario, limitando la subida a un máximo de 3 canciones y 10mb por archivo para optimizar recursos.
+- creación de un sistema de renombrado inteligente (slugify) para asegurar nombres de archivos limpios y profesionales en la nube.
+- actualización de la interfaz de usuario con un formulario de subida dinámico y renderizado condicional de carátulas (soporte para carátula propia o fondo negro por defecto).

@@ -85,9 +85,30 @@
                 </section>
 
                 <section id="library-view" style="display: none;">
-                    <h2>Mi Biblioteca</h2>
-                    <div class="library-content">
-                        <p>Aquí aparecerán tus playlists y canciones favoritas</p>
+                    <div class="view-header">
+                        <h2>Mi Biblioteca</h2>
+                        <div class="view-toggles">
+                            <button id="grid-view-btn" class="view-btn active" title="Vista Cuadrícula">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button id="list-view-btn" class="view-btn" title="Vista Lista">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="library-grid" class="songs-grid">
+                        <!-- canciones subidas por el usuario -->
+                    </div>
+                    <div id="library-list" class="songs-list" style="display: none;">
+                        <div class="list-header">
+                            <div class="col-cover">#</div>
+                            <div class="col-title">título</div>
+                            <div class="col-album">álbum</div>
+                            <div class="col-date">fecha subida</div>
+                        </div>
+                        <div id="library-list-items">
+                            <!-- items de lista -->
+                        </div>
                     </div>
                 </section>
 

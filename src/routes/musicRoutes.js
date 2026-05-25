@@ -4,6 +4,7 @@ const musicController = require('../controllers/musicController');
 const { verifyToken } = require('../middlewares/auth');
 
 router.get('/canciones', musicController.getAllSongs);
+router.get('/library', verifyToken, musicController.getUserLibrary); // nueva ruta biblioteca
 router.post('/upload', verifyToken, musicController.uploadFields, musicController.uploadSong);
 router.get('/usuarios/:userId/playlists', musicController.getUserPlaylists);
 router.post('/playlists', verifyToken, musicController.createPlaylist);
