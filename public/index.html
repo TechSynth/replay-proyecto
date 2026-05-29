@@ -4,19 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rePLAY - Streaming Musical</title>
+    <title>rePLAY - Reproductor de Música</title>
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div class="app-container">
-        <!-- sidebar -->
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
-                <h1>rePLAY</h1>
+                <h1><i class="fas fa-play-circle"></i> rePLAY</h1>
             </div>
-
             <nav class="main-nav">
                 <ul>
                     <li class="active">
@@ -26,28 +27,26 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" data-view="search">
-                            <i class="fas fa-search"></i>
-                            <span>Buscar</span>
-                        </a>
-                    </li>
-                    <li>
                         <a href="#" data-view="library">
                             <i class="fas fa-book"></i>
-                            <span>Mi Biblioteca</span>
+                            <span>Tu biblioteca</span>
                         </a>
                     </li>
                     <li>
                         <a href="#" data-view="upload">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <span>Subir Música</span>
+                            <i class="fas fa-plus-square"></i>
+                            <span>Subir una canción</span>
                         </a>
                     </li>
                 </ul>
             </nav>
-
-            <div class="playlists">
-                <h3>Mis Playlists</h3>
+            <div class="playlists-nav">
+                <div class="playlists-header">
+                    <h3>Mis playlists</h3>
+                    <button id="create-playlist-btn" title="Crear nueva playlist">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
                 <ul id="playlist-list">
                     <!-- carga de playlist -->
                 </ul>
@@ -71,52 +70,148 @@
 
             <div class="content-area" id="content-area">
                 <section id="home-view">
-                    <h2>Canciones Recientes</h2>
+                    <h2>Canciones de la comunidad</h2>
                     <div class="songs-grid" id="songs-grid">
                         <!-- Las canciones se cargarán aquí -->
+                    </div>
+                    
+                    <h2 style="margin-top: 40px;">Canciones recientes</h2>
+                    <div class="songs-grid" id="recent-songs-grid">
+                        <!-- Últimas 10 canciones escuchadas -->
                     </div>
                 </section>
 
                 <section id="search-view" style="display: none;">
-                    <h2>Resultados de Búsqueda</h2>
+                    <h2>Resultados de búsqueda</h2>
                     <div class="songs-grid" id="search-results">
                         <!-- Resultados de búsqueda -->
                     </div>
                 </section>
 
                 <section id="library-view" style="display: none;">
-                    <h2>Mi Biblioteca</h2>
-                    <div class="library-content">
-                        <p>Aquí aparecerán tus playlists y canciones favoritas</p>
+                    <div class="view-header">
+                        <h2>Mi Biblioteca</h2>
+                        <div class="view-toggles">
+                            <button id="grid-view-btn" class="view-btn active" title="Vista Cuadrícula">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button id="list-view-btn" class="view-btn" title="Vista Lista">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="library-grid" class="songs-grid">
+                        <!-- canciones subidas por el usuario -->
+                    </div>
+                    <div id="library-list" class="songs-list" style="display: none;">
+                        <div class="list-header">
+                            <div class="col-cover"></div>
+                            <div class="col-title">Título</div>
+                            <div class="col-album">Álbum</div>
+                            <div class="col-date">Fecha Subida</div>
+                        </div>
+                        <div id="library-list-items">
+                            <!-- items de lista -->
+                        </div>
+                    </div>
+                </section>
+
+                <section id="playlist-detail-view" style="display: none;">
+                    <div class="playlist-header">
+                        <div class="playlist-image-container" id="playlist-image-container">
+                            <img src="img/imagenPlaylist.png" id="playlist-cover" alt="Portada de playlist" onerror="this.src='https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop&q=80'">
+                            <div class="image-overlay">
+                                <i class="fas fa-pencil-alt"></i>
+                                <span>Cambiar Foto</span>
+                            </div>
+                            <input type="file" id="playlist-image-input" accept="image/*" style="display: none;">
+                        </div>
+                        <div class="playlist-info">
+                            <span class="playlist-type">Playlist</span>
+                            <h1 id="playlist-name" class="editable-title" contenteditable="true" spellcheck="false">Mi playlist</h1>
+                            <div class="playlist-actions">
+                                <button id="play-playlist-btn" class="play-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <div class="dropdown">
+                                    <button class="options-btn" id="playlist-options-btn">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="dropdown-content" id="playlist-dropdown">
+                                        <a href="#" id="delete-playlist-btn">Borrar</a>
+                                        <a href="#" id="share-playlist-btn">Compartir</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="songs-list playlist-songs">
+                        <div class="list-header" id="playlist-list-header">
+                            <div class="col-cover"></div>
+                            <div class="col-title">Título</div>
+                            <div class="col-album">Artista</div>
+                            <div class="col-date"><i class="far fa-clock"></i></div>
+                        </div>
+                        <div id="playlist-songs-list">
+                            <!-- canciones de la playlist -->
+                        </div>
                     </div>
                 </section>
 
                 <section id="upload-view" style="display: none;">
-                    <h2>Subir Nueva Canción</h2>
+                    <h2>Subir una nueva canción</h2>
                     <div class="upload-container">
                         <div class="upload-info">
-                            <p>puedes subir hasta 3 canciones (máximo 10mb por archivo).</p>
+                            <p>Puedes subir hasta 3 canciones (máximo 10MB por archivo).</p>
                         </div>
                         <form id="upload-form" class="standard-form">
                             <div class="form-group">
-                                <label for="upload-title">título de la canción</label>
-                                <input type="text" id="upload-title" placeholder="ej: mi gran éxito" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="upload-artist">artista</label>
-                                <input type="text" id="upload-artist" placeholder="ej: nombre del artista">
-                            </div>
-                            <div class="form-group">
-                                <label for="upload-file">archivo de audio (.mp3)</label>
+                                <label for="upload-file">1. Selecciona tu canción (.mp3)</label>
                                 <input type="file" id="upload-file" accept="audio/mpeg" required>
                             </div>
-                            <div class="form-group">
-                                <label for="upload-image">carátula (opcional, .jpg o .png)</label>
-                                <input type="file" id="upload-image" accept="image/*">
+
+                            <div id="metadata-fields" style="display: none; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                                <div id="metadata-suggestion" class="upload-status info" style="margin-bottom: 20px;">
+                                    <p><i class="fas fa-magic"></i> ¡Archivo analizado! Revisa los datos antes de subir.</p>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="upload-title">Título</label>
+                                    <input type="text" id="upload-title" placeholder="Título de la canción" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="upload-artist">Artista</label>
+                                    <input type="text" id="upload-artist" placeholder="Nombre del artista" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="upload-album">Álbum</label>
+                                    <input type="text" id="upload-album" placeholder="Nombre del álbum">
+                                </div>
+                                <div class="form-group">
+                                    <label for="upload-genre">Género (obligatorio para recomendaciones)</label>
+                                    <select id="upload-genre" class="standard-select" required>
+                                        <option value="">Selecciona un género</option>
+                                        <option value="pop">Pop</option>
+                                        <option value="rock">Rock</option>
+                                        <option value="urbano">Urbano</option>
+                                        <option value="electronica">Electrónica</option>
+                                        <option value="indie">Indie</option>
+                                        <option value="folk">Folk</option>
+                                        <option value="jazz">Jazz</option>
+                                        <option value="clasica">Clásica</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="upload-image">Carátula (opcional, .jpg o .png)</label>
+                                    <input type="file" id="upload-image" accept="image/*">
+                                    <p class="help-text" id="image-hint">Si el archivo ya tiene carátula, se usará automáticamente.</p>
+                                </div>
+
+                                <button type="submit" class="auth-btn" id="upload-submit-btn">
+                                    <i class="fas fa-cloud-upload-alt"></i> Subir canción
+                                </button>
                             </div>
-                            <button type="submit" class="auth-btn" id="upload-submit-btn">
-                                <i class="fas fa-upload"></i> subir a la nube
-                            </button>
                         </form>
                         <div id="upload-status" class="upload-status" style="display: none;"></div>
                     </div>
@@ -129,12 +224,10 @@
     <footer class="player">
         <div class="player-left">
             <div class="song-info">
-                <div class="song-image">
-                    <i class="fas fa-music"></i>
-                </div>
+                <div class="song-image" style="background-color: transparent;"></div>
                 <div class="song-details">
-                    <div class="song-title" id="current-song-title">Selecciona una canción</div>
-                    <div class="song-artist" id="current-song-artist">-</div>
+                    <div class="song-title" id="current-song-title"></div>
+                    <div class="song-artist" id="current-song-artist"></div>
                 </div>
             </div>
         </div>
@@ -153,8 +246,10 @@
             </div>
             <div class="player-progress">
                 <span class="time" id="current-time">0:00</span>
-                <div class="progress-bar">
-                    <div class="progress-filled" id="progress-filled"></div>
+                <div class="progress-container" id="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-filled" id="progress-filled"></div>
+                    </div>
                 </div>
                 <span class="time" id="total-time">0:00</span>
             </div>
@@ -167,6 +262,13 @@
             <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="70">
         </div>
     </footer>
+
+    <div id="song-context-menu" class="context-menu" style="display: none;">
+        <div class="context-menu-header">Añadir a playlist</div>
+        <div id="context-menu-playlists">
+            <!-- playlists list -->
+        </div>
+    </div>
 
     <script src="auth.js"></script>
     <script src="app.js"></script>
