@@ -75,3 +75,4 @@
 - restauración y elevación de la interfaz móvil: reposicionamiento del reproductor a una altura de 150px (bottom) para optimizar el flujo visual con la barra inferior y ajuste del artwork para un centrado perfecto.
 - recuperación del botón de gestión de playlists en la versión web de escritorio, garantizando que la funcionalidad de creación sea accesible en todas las plataformas.
 - corrección de interactividad táctil: depuración de los manejadores onclick para el cierre y creación de playlists en dispositivos móviles, eliminando conflictos de propagación de eventos.
+- corrección crítica: restauración de la estructura html del menú de playlists en móvil (bottom sheet), asegurando que los identificadores de los botones coincidan con los manejadores de eventos en javascript para restablecer su funcionalidad.

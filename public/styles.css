@@ -1798,4 +1798,102 @@ body {
     .expanded-info h3 {
         font-size: 18px;
     }
+
+    /* MENÚ PLAYLISTS MÓVIL (Bottom Sheet) */
+    .mobile-bottom-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 11000;
+        display: none;
+        align-items: flex-end;
+    }
+
+    .mobile-bottom-menu.show {
+        display: flex !important;
+    }
+
+    .menu-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .menu-content {
+        position: relative;
+        width: 100%;
+        background-color: #1a1a1a;
+        border-radius: 32px 32px 0 0;
+        padding: 32px;
+        max-height: 75%;
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+        animation: slideUpMob 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+    }
+
+    @keyframes slideUpMob {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .menu-header-mobile {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .menu-header-actions {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .mobile-add-btn, .mobile-close-btn {
+        background-color: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .mobile-add-btn {
+        background-color: var(--primary-color);
+        color: black;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .mobile-close-btn:active {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    #mobile-playlist-list-content {
+        list-style: none;
+        padding: 0;
+    }
+
+    #mobile-playlist-list-content li {
+        margin-bottom: 8px;
+    }
+
+    #mobile-playlist-list-content a {
+        color: white;
+        text-decoration: none;
+        font-size: 18px;
+        display: block;
+        padding: 18px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
 }
