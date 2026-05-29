@@ -221,7 +221,7 @@ body {
     margin: 8px 0;
 }
 
-/* MODALES DE USUARIO */
+/* modales de usuario */
 .modal-container {
     position: fixed;
     top: 0;
@@ -293,13 +293,13 @@ body {
     color: white;
 }
 
-/* Botón de acción positiva (Cambiar nombre) */
+/* botón de acción positiva (cambiar nombre) */
 .modal-btn-save {
     background-color: var(--primary-color);
     color: black;
 }
 
-/* Botón de acción destructiva (Borrar) - Ahora en blanco y muy discreto */
+/* botón de acción destructiva (borrar) - ahora en blanco y muy discreto */
 .modal-btn-danger {
     background-color: rgba(255, 255, 255, 0.05);
     color: white;
@@ -310,7 +310,7 @@ body {
     cursor: not-allowed;
 }
 
-/* HIGHLIGHT PARA CANCELAR/VOLVER EN EL FLUJO DE BORRADO */
+/* highlight para cancelar/volver en el flujo de borrado */
 #modal-delete-1 .modal-btn-cancel,
 #modal-delete-2 .modal-btn-cancel {
     background-color: var(--primary-color);
@@ -319,8 +319,8 @@ body {
 
 #modal-delete-1 .modal-btn-cancel:hover,
 #modal-delete-2 .modal-btn-cancel:hover {
-    background-color: var(--primary-color); /* Mantener el mismo verde */
-    transform: none; /* Sin escalado */
+    background-color: var(--primary-color); /* mantener el mismo verde */
+    transform: none; /* sin escalado */
 }
 
 .content-area {
@@ -392,10 +392,10 @@ body {
     margin-top: 8px;
 }
 
-/* REPRODUCTOR FLOTANTE Y NEUMORFISTA */
+/* reproductor flotante y neumorfista */
 .player {
     height: var(--player-height);
-    background-color: #1a1a1a !important; /* Fondo sólido oscuro */
+    background-color: #1a1a1a !important; /* fondo sólido oscuro */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -408,7 +408,7 @@ body {
     max-width: 1400px;
     border-radius: 24px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-    z-index: 9999; /* Máxima prioridad sobre todo */
+    z-index: 9999; /* máxima prioridad sobre todo */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -447,7 +447,7 @@ body {
     opacity: 1;
 }
 
-/* Ocultar elementos del mini player cuando está expandido o cerrándose */
+/* ocultar elementos del mini player cuando está expandido o cerrándose */
 .player.expanded .player-left,
 .player.expanded .player-right,
 .player.closing .player-left,
@@ -507,7 +507,7 @@ body {
 
 .large-cover {
     width: 100%;
-    max-width: 380px; /* Reducido de 500px */
+    max-width: 380px; /* reducido de 500px */
     aspect-ratio: 1;
     border-radius: 20px;
     overflow: hidden;
@@ -528,13 +528,13 @@ body {
 }
 
 .expanded-info h2 {
-    font-size: 32px; /* Reducido de 48px */
+    font-size: 32px; /* reducido de 48px */
     font-weight: 800;
     margin-bottom: 8px;
 }
 
 .expanded-info h3 {
-    font-size: 18px; /* Reducido de 24px */
+    font-size: 18px; /* reducido de 24px */
     color: var(--text-secondary);
     font-weight: 500;
 }
@@ -561,7 +561,7 @@ body {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* BOTÓN PLAY MÁS PEQUEÑO Y ESTILIZADO */
+/* botón play más pequeño y estilizado */
 .player-controls .play-btn {
     width: 38px;
     height: 38px;
@@ -583,7 +583,7 @@ body {
     transform: scale(1.1);
 }
 
-/* TRANSICIONES ENTRE CANCIONES */
+/* transiciones entre canciones */
 .slide-out-left {
     transform: translateX(-100%);
     opacity: 0;
@@ -760,7 +760,7 @@ body {
     }
 }
 
-/* Estilos para iconos Font Awesome */
+/* estilos para iconos font awesome */
 .fas, .fa {
     font-size: inherit;
 }
@@ -789,7 +789,7 @@ body {
     font-size: 24px;
 }
 
-/* ====== ESTILOS DE AUTENTICACIÓN ====== */
+/* ====== estilos de autenticación ====== */
 
 .auth-body {
     display: flex;
@@ -922,7 +922,7 @@ body {
     transform: scale(0.98);
 }
 
-/* Social Auth Styles */
+/* social auth styles */
 .auth-divider {
     display: flex;
     align-items: center;
@@ -988,7 +988,7 @@ body {
     text-align: center;
 }
 
-/* ====== ESTILOS DE SUBIDA ====== */
+/* ====== estilos de subida ====== */
 
 .upload-container {
     max-width: 600px;
@@ -1073,7 +1073,7 @@ body {
     color: #b3b3b3;
 }
 
-/* ====== VISTAS GRID Y LISTA ====== */
+/* ====== vistas grid y lista ====== */
 .view-header {
     display: flex;
     justify-content: space-between;
@@ -1502,7 +1502,7 @@ body {
     background-color: var(--primary-color);
 }
 
-/* ajustes finales UI */
+/* ajustes finales ui */
 .playlist-item span {
     font-size: 14px;
     padding: 2px 0;

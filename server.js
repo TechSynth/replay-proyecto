@@ -1,33 +1,32 @@
-require('dotenv').config();
-const express = require('express');
-const path = require('path');
-const authRoutes = require('./src/routes/authRoutes');
-const musicRoutes = require('./src/routes/musicRoutes');
-const runMigrations = require('./src/config/migrate');
+require("dotenv").config();
+const express = require("express");
+const path = require("path");
+const authRoutes = require("./src/routes/authRoutes");
+const musicRoutes = require("./src/routes/musicRoutes");
+const runMigrations = require("./src/config/migrate");
 
-// inicializar servidor express
-// documentacion: https://expressjs.com/
+// arrancando el motor de express
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// inicializar bd
+// ejecuto las migraciones para que las tablas estén listas
 runMigrations();
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-// rutas
-app.use('/api/auth', authRoutes);
-app.use('/api', musicRoutes);
-console.log('Rutas de autenticación y música cargadas.');
+// rutas para el login y esas cosas
+app.use("/api/auth", authRoutes);
+app.use("/api", musicRoutes);
+console.log("rutas de autenticación y música cargadas.");
 
-// front
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// rutas para mostrar las páginas
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+app.get("/login", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
 app.listen(PORT, () => {
