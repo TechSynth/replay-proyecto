@@ -51,17 +51,95 @@ const elements = {
     libraryList: document.getElementById('library-list'),
     libraryListItems: document.getElementById('library-list-items'),
     gridViewBtn: document.getElementById('grid-view-btn'),
-    listViewBtn: document.getElementById('list-view-btn')
+    listViewBtn: document.getElementById('list-view-btn'),
+    playlistDetailView: document.getElementById('playlist-detail-view'),
+    playlistSongsList: document.getElementById('playlist-songs-list'),
+    playlistName: document.getElementById('playlist-name'),
+    playlistCover: document.getElementById('playlist-cover'), progressContainer: document.getElementById('progress-container'), recentSongsGrid: document.getElementById('recent-songs-grid')
 };
 
 // api
 
+async function analyzeFile(file) {
+    const status = elements.uploadStatus;
+    const metadataFields = document.getElementById('metadata-fields');
+    const suggestion = document.getElementById('metadata-suggestion');
+
+    status.textContent = 'Analizando metadatos del archivo...';
+    status.className = 'upload-status loading';
+    status.style.display = 'block';
+    metadataFields.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('audio', file);
+
+    try {
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${auth.getToken()}`
+            },
+            body: formData
+        });
+
+        // manejar errores 404/500 antes de intentar parsear json
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error del servidor:', errorText);
+            throw new Error(`Error ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            status.style.display = 'none';
+            metadataFields.style.display = 'block';
+            
+            document.getElementById('upload-title').value = data.data.titulo || '';
+            document.getElementById('upload-artist').value = data.data.artista || '';
+            document.getElementById('upload-album').value = data.data.album || '';
+            
+            if (data.data.genero) {
+                const genreSelect = document.getElementById('upload-genre');
+                const genreLower = data.data.genero.toLowerCase();
+                for (let option of genreSelect.options) {
+                    if (genreLower.includes(option.value) && option.value !== '') {
+                        genreSelect.value = option.value;
+                        break;
+                    }
+                }
+            }
+
+            const imageHint = document.getElementById('image-hint');
+            if (data.data.has_picture) {
+                imageHint.innerHTML = '<i class="fas fa-check"></i> El archivo ya incluye carátula, se usará automáticamente.';
+                imageHint.style.color = '#1DB954';
+            } else {
+                imageHint.innerHTML = '<i class="fas fa-info-circle"></i> El archivo no tiene carátula, puedes subir una manualmente.';
+                imageHint.style.color = '#b3b3b3';
+            }
+
+            suggestion.innerHTML = '<p><i class="fas fa-magic"></i> ¡Archivo analizado! Revisa los datos y completa el género.</p>';
+            suggestion.className = 'upload-status success';
+
+        } else {
+            status.textContent = `Error al analizar: ${data.error}`;
+            status.className = 'upload-status error';
+        }
+    } catch (error) {
+        console.error('Error en análisis:', error);
+        status.textContent = 'Error al conectar con el analizador (404/500)';
+        status.className = 'upload-status error';
+    }
+}
+
 async function uploadSong(formData) {
-    elements.uploadStatus.textContent = 'subiendo canción y procesando metadatos...';
-    elements.uploadStatus.className = 'upload-status loading';
-    elements.uploadStatus.style.display = 'block';
-    
+    const status = elements.uploadStatus;
     const submitBtn = document.getElementById('upload-submit-btn');
+
+    status.textContent = 'Subiendo canción...';
+    status.className = 'upload-status loading';
+    status.style.display = 'block';
     submitBtn.disabled = true;
 
     try {
@@ -73,23 +151,29 @@ async function uploadSong(formData) {
             body: formData
         });
 
+        if (!response.ok) throw new Error(`Error ${response.status}`);
+
         const data = await response.json();
 
         if (data.success) {
-            elements.uploadStatus.textContent = `¡éxito! se ha subido "${data.data.titulo}"`;
-            elements.uploadStatus.className = 'upload-status success';
-            elements.uploadForm.reset();
-            // recargar datos
+            status.textContent = `¡Canción subida con éxito!`;
+            status.className = 'upload-status success';
+            setTimeout(() => {
+                elements.uploadForm.reset();
+                document.getElementById('metadata-fields').style.display = 'none';
+                status.style.display = 'none';
+            }, 3000);
+            
             await fetchSongs();
-            await fetchLibrary();
+            if (elements.libraryView.style.display !== 'none') await fetchLibrary();
         } else {
-            elements.uploadStatus.textContent = `error: ${data.error}`;
-            elements.uploadStatus.className = 'upload-status error';
+            status.textContent = `Error: ${data.error}`;
+            status.className = 'upload-status error';
         }
     } catch (error) {
-        console.error('error en subida:', error);
-        elements.uploadStatus.textContent = 'error de conexión con el servidor';
-        elements.uploadStatus.className = 'upload-status error';
+        console.error('Error en subida:', error);
+        status.textContent = 'Error de red al subir';
+        status.className = 'upload-status error';
     } finally {
         submitBtn.disabled = false;
     }
@@ -100,6 +184,7 @@ async function fetchSongs() {
         const response = await fetch('/api/canciones', {
             headers: getAuthHeaders()
         });
+        if (!response.ok) throw new Error('404');
         const data = await response.json();
         
         if (data.success) {
@@ -113,9 +198,16 @@ async function fetchSongs() {
 
 async function fetchLibrary() {
     try {
+        console.log('Cargando biblioteca...');
         const response = await fetch('/api/library', {
             headers: getAuthHeaders()
         });
+        
+        if (!response.ok) {
+            console.error('Error en fetch library:', response.status);
+            return;
+        }
+
         const data = await response.json();
         
         if (data.success) {
@@ -127,32 +219,16 @@ async function fetchLibrary() {
     }
 }
 
-async function fetchPlaylists(userId = null) {
-    try {
-        const id = userId || appState.user?.id || 1;
-        const response = await fetch(`/api/usuarios/${id}/playlists`, {
-            headers: getAuthHeaders()
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            appState.playlists = data.data;
-            renderPlaylists(data.data);
-        }
-    } catch (error) {
-        console.error('Error cargando playlists:', error);
-    }
-}
-
 async function searchSongs(query) {
     try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
             headers: getAuthHeaders()
         });
-        const data = await response.json();
-        
-        if (data.success) {
-            renderSearchResults(data.data);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                renderSearchResults(data.data);
+            }
         }
     } catch (error) {
         console.error('Error en búsqueda:', error);
@@ -184,10 +260,7 @@ function renderLibrary(songs) {
     }
     
     songs.forEach((song, index) => {
-        // grid mode
         elements.libraryGrid.appendChild(createSongCard(song));
-        
-        // list mode
         elements.libraryListItems.appendChild(createListItem(song, index + 1));
     });
 }
@@ -195,20 +268,24 @@ function renderLibrary(songs) {
 function createSongCard(song) {
     const card = document.createElement('div');
     card.className = 'song-card';
+    card.draggable = true;
     card.onclick = () => playSong(song);
+    card.oncontextmenu = (e) => {
+        e.preventDefault();
+        showContextMenu(e, song.id, song);
+    };
+    card.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('songId', song.id);
+        e.dataTransfer.effectAllowed = 'copy';
+    });
     
     const imageUrl = song.imagen_url || '';
-    const imageStyle = imageUrl 
-        ? `background-image: url('${imageUrl}'); background-size: cover; background-position: center;` 
-        : `background-color: #000; display: flex; align-items: center; justify-content: center;`;
     
-    card.innerHTML = `
-        <div class="song-card-image" style="${imageStyle}">
-            ${!imageUrl ? '<i class="fas fa-music"></i>' : ''}
-        </div>
-        <div class="song-card-title">${song.titulo}</div>
-        <div class="song-card-artist">${song.artista_nombre || 'artista desconocido'}</div>
-    `;
+    card.innerHTML = '<div class="song-card-image">' + 
+        (imageUrl ? '<img src="' + imageUrl + '" alt="' + song.titulo + '">' : '<i class="fas fa-music"></i>') + 
+        '</div>' +
+        '<div class="song-card-title">' + song.titulo + '</div>' +
+        '<div class="song-card-artist">' + (song.artista_nombre || 'Artista desconocido') + '</div>';
     
     return card;
 }
@@ -216,44 +293,25 @@ function createSongCard(song) {
 function createListItem(song, index) {
     const item = document.createElement('div');
     item.className = 'list-item';
-    item.onclick = () => playSong(song);
-    
+    item.draggable = true;
+    item.onclick = () => playSong(song); item.oncontextmenu = (e) => { e.preventDefault(); showContextMenu(e, song.id, song); };
+
+    // drag events
+    item.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('songId', song.id);
+        e.dataTransfer.effectAllowed = 'copy';
+    });
+
     const date = new Date(song.fecha_subida).toLocaleDateString('es-ES', {
         day: '2-digit',
         month: 'short',
         year: 'numeric'
     });
-    
-    item.innerHTML = `
-        <div class="col-cover">
-            <div class="item-cover">
-                ${song.imagen_url ? `<img src="${song.imagen_url}" alt="${song.titulo}">` : '<i class="fas fa-music"></i>'}
-            </div>
-        </div>
-        <div class="item-info">
-            <span class="item-title">${song.titulo}</span>
-            <span class="item-artist">${song.artista_nombre || 'artista desconocido'}</span>
-        </div>
-        <div class="item-album">${song.album_nombre || 'sin álbum'}</div>
-        <div class="item-date">${date}</div>
-    `;
-    
+
+    item.innerHTML = '<div class="col-cover"><div class="item-cover">' + (song.imagen_url ? '<img src="' + song.imagen_url + '" alt="' + song.titulo + '">' : '<i class="fas fa-music"></i>') + '</div></div><div class="item-info"><span class="item-title">' + song.titulo + '</span><span class="item-artist">' + (song.artista_nombre || 'Artista desconocido') + '</span></div><div class="item-album">' + (song.album_nombre || 'Sin álbum') + '</div><div class="col-date">' + date + '</div>';
+
     return item;
 }
-
-function renderPlaylists(playlists) {
-    elements.playlistList.innerHTML = '';
-    if (playlists.length === 0) {
-        elements.playlistList.innerHTML = '<li style="color: #666;">Sin playlists</li>';
-        return;
-    }
-    playlists.forEach(playlist => {
-        const li = document.createElement('li');
-        li.textContent = playlist.nombre;
-        elements.playlistList.appendChild(li);
-    });
-}
-
 function renderSearchResults(results) {
     elements.searchResults.innerHTML = '';
     if (results.length === 0) {
@@ -273,34 +331,50 @@ function playSong(song) {
         togglePlay();
         return;
     }
-
     appState.currentSong = song;
     appState.isPlaying = true;
-    
-    audioPlayer.src = `/api/music/stream/${song.id}`;
+    saveRecentSong(song);
+    audioPlayer.src = '/api/music/stream/' + song.id;
     audioPlayer.volume = appState.volume;
     audioPlayer.play().catch(err => console.error('error al reproducir:', err));
-    
     elements.currentSongTitle.textContent = song.titulo;
     elements.currentSongArtist.textContent = song.artista_nombre || 'artista desconocido';
-    
     if (song.imagen_url) {
-        elements.songImage.innerHTML = `<img src="${song.imagen_url}" alt="cover">`;
+        elements.songImage.innerHTML = '<img src="' + song.imagen_url + '" alt="cover">';
         elements.songImage.style.backgroundColor = 'transparent';
     } else {
-        elements.songImage.innerHTML = '<i class="fas fa-music"></i>';
+        elements.songImage.innerHTML = '';
         elements.songImage.style.backgroundColor = '#000';
     }
-    
     document.querySelector('#play-btn i').className = 'fas fa-pause';
-    
     audioPlayer.ontimeupdate = () => {
         appState.currentTime = audioPlayer.currentTime;
         appState.duration = audioPlayer.duration || song.duracion || 0;
         updateProgress();
     };
-
     audioPlayer.onended = () => nextSong();
+}
+
+function saveRecentSong(song) {
+    let recent = JSON.parse(localStorage.getItem('recent_songs') || '[]');
+    recent = recent.filter(s => s.id !== song.id);
+    recent.unshift(song);
+    if (recent.length > 10) recent.pop();
+    localStorage.setItem('recent_songs', JSON.stringify(recent));
+    renderRecentSongs();
+}
+
+function renderRecentSongs() {
+    if (!elements.recentSongsGrid) return;
+    const recent = JSON.parse(localStorage.getItem('recent_songs') || '[]');
+    elements.recentSongsGrid.innerHTML = '';
+    if (recent.length === 0) {
+        elements.recentSongsGrid.innerHTML = '<p style="color:#666; padding: 20px;">No has escuchado canciones recientemente</p>';
+        return;
+    }
+    recent.forEach(song => {
+        elements.recentSongsGrid.appendChild(createSongCard(song));
+    });
 }
 
 function togglePlay() {
@@ -358,19 +432,24 @@ function switchView(viewName) {
     elements.searchView.style.display = 'none';
     elements.libraryView.style.display = 'none';
     elements.uploadView.style.display = 'none';
-    
+    elements.playlistDetailView.style.display = 'none';
+
     const view = document.getElementById(`${viewName}-view`);
     if (view) view.style.display = 'block';
-    
-    document.querySelectorAll('.main-nav li').forEach(li => {
-        li.classList.remove('active');
+
+    document.querySelectorAll('.main-nav li, .playlist-item').forEach(el => {
+        el.classList.remove('active');
     });
+
     const navLink = document.querySelector(`[data-view="${viewName}"]`);
-    if (navLink) navLink.parentElement.classList.add('active');
-    
+    if (navLink) {
+        if (navLink.parentElement.tagName === 'LI') {
+            navLink.parentElement.classList.add('active');
+        }
+    }
+
     if (viewName === 'library') fetchLibrary();
 }
-
 function toggleLibraryView(mode) {
     appState.viewMode = mode;
     if (mode === 'grid') {
@@ -386,7 +465,294 @@ function toggleLibraryView(mode) {
     }
 }
 
+// playlists
+
+async function fetchPlaylists(userId) {
+    try {
+        const response = await fetch(`/api/usuarios/${userId}/playlists`, {
+            headers: getAuthHeaders()
+        });
+        const result = await response.json();
+        if (result.success) {
+            appState.playlists = result.data;
+            renderPlaylists();
+        }
+    } catch (err) {
+        console.error('error cargando playlists:', err);
+    }
+}
+
+function renderPlaylists() {
+    elements.playlistList.innerHTML = '';
+    appState.playlists.forEach(playlist => {
+        const li = document.createElement('li');
+        li.className = 'playlist-item';
+        li.innerHTML = '<a href="#" data-playlist-id="' + playlist.id + '"><span>' + playlist.nombre + '</span></a>';
+        
+        const link = li.querySelector('a');
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPlaylistDetail(playlist.id);
+        });
+
+        // drag & drop target
+        li.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            li.classList.add('drag-over');
+        });
+
+        li.addEventListener('dragleave', () => {
+            li.classList.remove('drag-over');
+        });
+
+        li.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            li.classList.remove('drag-over');
+            const songId = e.dataTransfer.getData('songId');
+            if (songId) {
+                await addSongToPlaylist(playlist.id, songId);
+            }
+        });
+
+        elements.playlistList.appendChild(li);
+    });
+}
+
+// playlists
+
+async function createNewPlaylist() {
+    try {
+        const response = await fetch('/api/playlists', {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+        const result = await response.json();
+        if (result.success) {
+            appState.playlists.unshift(result.data);
+            renderPlaylists();
+            showPlaylistDetail(result.data.id);
+        }
+    } catch (err) {
+        console.error('error creando playlist:', err);
+    }
+}
+
+// player drag
+const playerSongInfo = document.querySelector('.player-left .song-info');
+if (playerSongInfo) {
+    playerSongInfo.draggable = true;
+    playerSongInfo.addEventListener('dragstart', (e) => {
+        if (appState.currentSong) {
+            e.dataTransfer.setData('songId', appState.currentSong.id);
+            e.dataTransfer.effectAllowed = 'copy';
+        } else {
+            e.preventDefault();
+        }
+    });
+
+    // menu contextual para el reproductor también
+    playerSongInfo.addEventListener('contextmenu', (e) => {
+        if (appState.currentSong) {
+            e.preventDefault();
+            showContextMenu(e, appState.currentSong.id);
+        }
+    });
+}
+
+async function addSongToPlaylist(playlistId, songId) {
+    try {
+        const response = await fetch(`/api/playlists/${playlistId}/canciones`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ cancion_id: songId })
+        });
+        const result = await response.json();
+        if (result.success) {
+            // mostrar feedback visual opcional
+            console.log('Canción añadida');
+            if (appState.currentPlaylist && appState.currentPlaylist.id == playlistId) {
+                showPlaylistDetail(playlistId);
+            }
+        } else {
+            alert(result.error || 'Error al añadir canción');
+        }
+    } catch (err) {
+        console.error('Error añadiendo a playlist:', err);
+    }
+}
+
+function showContextMenu(e, songId, song = null) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('song-context-menu');
+    const playlistsList = document.getElementById('context-menu-playlists');
+    playlistsList.innerHTML = '';
+    if (appState.playlists.length === 0) {
+        const noPl = document.createElement('div');
+        noPl.className = 'context-menu-item';
+        noPl.style.color = '#666';
+        noPl.textContent = 'No tienes playlists';
+        playlistsList.appendChild(noPl);
+    } else {
+        appState.playlists.forEach(playlist => {
+            const item = document.createElement('div');
+            item.className = 'context-menu-item';
+            item.textContent = playlist.nombre;
+            item.onclick = () => {
+                addSongToPlaylist(playlist.id, songId);
+                menu.style.display = 'none';
+            };
+            playlistsList.appendChild(item);
+        });
+    }
+    menu.style.display = 'block';
+    let x = e.clientX;
+    let y = e.clientY;
+    const menuWidth = 200;
+    const menuHeight = 150; 
+    if (x + menuWidth > window.innerWidth) x -= menuWidth;
+    if (y + menuHeight > window.innerHeight) y -= menuHeight;
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    const closeMenu = (event) => {
+        if (!menu.contains(event.target)) {
+            menu.style.display = 'none';
+            document.removeEventListener('mousedown', closeMenu);
+        }
+    };
+    setTimeout(() => document.addEventListener('mousedown', closeMenu), 0);
+}
+
+async function showPlaylistDetail(id) {
+    try {
+        const response = await fetch(`/api/playlists/${id}`, {
+            headers: getAuthHeaders()
+        });
+        const result = await response.json();
+        if (result.success) {
+            const playlist = result.data;
+            appState.currentPlaylist = playlist;
+
+            switchView('playlist-detail');
+            
+            elements.playlistName.textContent = playlist.nombre;
+            elements.playlistName.dataset.id = playlist.id;
+            elements.playlistCover.src = playlist.imagen_url || 'img/imagenPlaylist.png';
+            
+            // resaltar en el sidebar
+            document.querySelectorAll('.playlist-item').forEach(li => {
+                if (li.querySelector('a').dataset.playlistId == id) {
+                    li.classList.add('active');
+                }
+            });
+
+            renderPlaylistSongs(playlist.canciones);
+            document.getElementById('play-playlist-btn').onclick = () => {
+                if (playlist.canciones.length > 0) {
+                    appState.songs = playlist.canciones;
+                    playSong(playlist.canciones[0]);
+                }
+            };
+        }
+    } catch (err) {
+        console.error('error cargando detalle:', err);
+    }
+}
+
+function renderPlaylistSongs(songs) {
+    elements.playlistSongsList.innerHTML = '';
+    if (songs.length === 0) {
+        elements.playlistSongsList.innerHTML = '<div class="no-results">Esta playlist está vacía</div>';
+        return;
+    }
+    songs.forEach((song, index) => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.draggable = true;
+        div.innerHTML = '<div class="col-cover">' + (index + 1) + '</div><div class="col-title"><div class="item-info"><div class="item-name">' + song.titulo + '</div></div></div><div class="col-album">' + (song.artista_nombre || 'Artista Desconocido') + '</div><div class="col-date">' + formatTime(song.duracion) + '</div>';
+        div.onclick = () => playSong(song);
+        div.oncontextmenu = (e) => {
+            e.preventDefault();
+            showContextMenu(e, song.id, song);
+        };
+        div.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('songId', song.id);
+            e.dataTransfer.effectAllowed = 'copy';
+        });
+        elements.playlistSongsList.appendChild(div);
+    });
+}
+
+async function updatePlaylistTitle(id, newName) {
+    try {
+        const response = await fetch(`/api/playlists/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ nombre: newName })
+        });
+        const result = await response.json();
+        if (result.success) {
+            elements.playlistName.textContent = newName;
+            // actualizar en sidebar
+            const playlist = appState.playlists.find(p => p.id == id);
+            if (playlist) playlist.nombre = newName;
+            renderPlaylists();
+        }
+    } catch (err) {
+        console.error('error actualizando titulo:', err);
+    }
+}
+
+async function deletePlaylist(id) {
+    if (!confirm('¿Estás seguro de que quieres borrar esta playlist?')) return;
+    try {
+        const response = await fetch(`/api/playlists/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        const result = await response.json();
+        if (result.success) {
+            appState.playlists = appState.playlists.filter(p => p.id != id);
+            renderPlaylists();
+            switchView('home');
+        }
+    } catch (err) {
+        console.error('error borrando playlist:', err);
+    }
+}
+
+async function updatePlaylistImage(id, file) {
+    const formData = new FormData();
+    formData.append('imagen', file);
+
+    try {
+        const response = await fetch(`/api/playlists/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${auth.getToken()}`
+            },
+            body: formData
+        });
+        const result = await response.json();
+        if (result.success) {
+            elements.playlistCover.src = result.data.imagen_url;
+            // actualizar en cache local
+            const playlist = appState.playlists.find(p => p.id == id);
+            if (playlist) playlist.imagen_url = result.data.imagen_url;
+        }
+    } catch (err) {
+        console.error('error subiendo imagen:', err);
+    }
+}
+
 // listeners
+elements.progressContainer.addEventListener('click', (e) => {
+    const width = elements.progressContainer.clientWidth;
+    const clickX = e.offsetX;
+    const duration = audioPlayer.duration;
+    if (duration) {
+        audioPlayer.currentTime = (clickX / width) * duration;
+    }
+});
 
 elements.playBtn.addEventListener('click', togglePlay);
 elements.prevBtn.addEventListener('click', prevSong);
@@ -396,15 +762,21 @@ elements.volumeSlider.addEventListener('input', (e) => updateVolume(e.target.val
 elements.gridViewBtn.addEventListener('click', () => toggleLibraryView('grid'));
 elements.listViewBtn.addEventListener('click', () => toggleLibraryView('list'));
 
+document.getElementById('upload-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) analyzeFile(file);
+});
+
 elements.uploadForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('titulo', document.getElementById('upload-title').value);
     formData.append('artista', document.getElementById('upload-artist').value);
+    formData.append('album', document.getElementById('upload-album').value);
+    formData.append('genero', document.getElementById('upload-genre').value);
     formData.append('audio', document.getElementById('upload-file').files[0]);
     const image = document.getElementById('upload-image').files[0];
     if (image) formData.append('imagen', image);
-    
     await uploadSong(formData);
 });
 
@@ -432,6 +804,57 @@ document.querySelectorAll('[data-view]').forEach(link => {
     });
 });
 
+// listeners de playlist
+document.getElementById('create-playlist-btn').addEventListener('click', createNewPlaylist);
+
+document.getElementById('playlist-options-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('playlist-dropdown').classList.toggle('show');
+});
+
+document.addEventListener('click', () => {
+    document.getElementById('playlist-dropdown').classList.remove('show');
+});
+
+document.getElementById('delete-playlist-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (appState.currentPlaylist) {
+        deletePlaylist(appState.currentPlaylist.id);
+    }
+});
+
+document.getElementById('share-playlist-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    alert('Funcionalidad de compartir no disponible en esta versión.');
+});
+
+// edicion de titulo inline
+elements.playlistName.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        elements.playlistName.blur();
+    }
+});
+
+elements.playlistName.addEventListener('blur', () => {
+    const id = elements.playlistName.dataset.id;
+    const newName = elements.playlistName.textContent.trim();
+    if (id && newName && newName !== appState.currentPlaylist?.nombre) {
+        updatePlaylistTitle(id, newName);
+    }
+});
+
+document.getElementById('playlist-image-container').addEventListener('click', () => {
+    document.getElementById('playlist-image-input').click();
+});
+
+document.getElementById('playlist-image-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file && appState.currentPlaylist) {
+        updatePlaylistImage(appState.currentPlaylist.id, file);
+    }
+});
+
 // inicializacion
 
 async function init() {
@@ -444,7 +867,7 @@ async function init() {
     appState.user = user;
     
     await fetchSongs();
-    await fetchPlaylists(user.id);
+    await fetchPlaylists(user.id); renderRecentSongs();
 }
 
 if (document.readyState === 'loading') {

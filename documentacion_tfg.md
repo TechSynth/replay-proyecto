@@ -32,3 +32,14 @@
 - desarrollo de una lógica de cuotas por usuario, limitando la subida a un máximo de 3 canciones y 10mb por archivo para optimizar recursos.
 - creación de un sistema de renombrado inteligente (slugify) para asegurar nombres de archivos limpios y profesionales en la nube.
 - actualización de la interfaz de usuario con un formulario de subida dinámico y renderizado condicional de carátulas (soporte para carátula propia o fondo negro por defecto).
+
+## día 28 de mayo
+- rediseño y pulido completo de la interfaz de usuario, garantizando formato "tipo oración" (sentence case) en todos los textos visibles.
+- implementación del sistema de creación de playlists con contador persistente en la base de datos aws rds.
+- desarrollo de rutas y controladores para gestionar playlists completas (crear, obtener, actualizar título e imagen, borrar).
+- integración interactiva de cambio de portada en playlists, subiendo las nuevas imágenes directamente a aws s3.
+- desarrollo de interacciones avanzadas de usuario para las canciones: clic izquierdo para reproducir instantáneamente, clic derecho para desplegar el menú contextual.
+- implementación de funcionalidad de arrastrar y soltar (drag and drop) para organizar canciones fácilmente hacia las playlists en la barra lateral.
+- programación del reproductor musical para soportar salto de tiempo (seeking) interactuando directamente con la barra de progreso.
+- creación de un sistema de "canciones recientes" persistente en el navegador mediante localstorage, mostrando siempre el historial de las últimas 10 reproducciones en la página principal.
+- limpieza extensiva de código: estandarización de comentarios, eliminación de funciones no utilizadas, simplificación de mensajes y eliminación de lógicas redundantes para mejorar la mantenibilidad y humanidad del código.
