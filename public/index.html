@@ -38,6 +38,12 @@
                             <span>Subir una canción</span>
                         </a>
                     </li>
+                    <li class="mobile-only">
+                        <a href="#" id="mobile-playlists-btn">
+                            <i class="fas fa-list-ul"></i>
+                            <span>Playlists</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             <div class="playlists-nav">
@@ -341,6 +347,27 @@
 
     <script src="auth.js"></script>
     <script src="app.js"></script>
+
+    <!-- Menú de playlists para móvil (Bottom Sheet) -->
+    <div id="mobile-playlists-menu" class="mobile-bottom-menu">
+        <div class="menu-overlay" id="mobile-menu-overlay"></div>
+        <div class="menu-content">
+            <div class="menu-header-mobile">
+                <h3>Playlists</h3>
+                <div class="menu-header-actions">
+                    <button id="mobile-add-playlist-btn" class="mobile-add-btn">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button id="close-mobile-menu-btn" class="mobile-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <ul id="mobile-playlist-list-content">
+                <!-- carga dinámica -->
+            </ul>
+        </div>
+    </div>
 </body>
 
 </html>

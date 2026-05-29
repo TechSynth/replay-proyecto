@@ -496,6 +496,9 @@ function updateProgress() {
     elements.progressFilled.style.width = `${percentage}%`;
     elements.currentTime.textContent = formatTime(appState.currentTime);
     elements.totalTime.textContent = formatTime(appState.duration);
+    
+    // actualizamos variable css para el efecto de borde en movil
+    elements.mainPlayer.style.setProperty("--progress-percent", `${percentage}%`);
 }
 
 function updateVolume(value) {
@@ -531,6 +534,8 @@ function switchView(viewName) {
     if (elements.mainPlayer.classList.contains("expanded")) {
         togglePlayerExpansion();
     }
+    document.getElementById("mobile-playlists-menu")?.classList.remove("show");
+    
     elements.homeView.style.display = "none";
     elements.searchView.style.display = "none";
     elements.libraryView.style.display = "none";
@@ -587,6 +592,9 @@ async function fetchPlaylists(userId) {
 
 function renderPlaylists() {
     elements.playlistList.innerHTML = ``;
+    const mobileList = document.getElementById("mobile-playlist-list-content");
+    if (mobileList) mobileList.innerHTML = ``;
+
     appState.playlists.forEach(playlist => {
         const li = document.createElement("li");
         li.className = "playlist-item";
@@ -618,6 +626,18 @@ function renderPlaylists() {
         });
 
         elements.playlistList.appendChild(li);
+
+        // añadir a la lista móvil si existe
+        if (mobileList) {
+            const mLi = document.createElement("li");
+            mLi.innerHTML = `<a href="#">${playlist.nombre}</a>`;
+            mLi.querySelector("a").onclick = (e) => {
+                e.preventDefault();
+                showPlaylistDetail(playlist.id);
+                document.getElementById("mobile-playlists-menu").classList.remove("show");
+            };
+            mobileList.appendChild(mLi);
+        }
     });
 }
 
@@ -1115,7 +1135,42 @@ document.querySelectorAll("[data-view]").forEach(link => {
     });
 });
 
-document.getElementById("create-playlist-btn").addEventListener("click", createNewPlaylist);
+// botones de gestión de playlists
+const createPlBtn = document.getElementById("create-playlist-btn");
+if (createPlBtn) createPlBtn.onclick = createNewPlaylist;
+
+const mobAddPlBtn = document.getElementById("mobile-add-playlist-btn");
+if (mobAddPlBtn) mobAddPlBtn.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    createNewPlaylist();
+};
+
+// abrir menú playlists en móvil
+const mobPlBtn = document.getElementById("mobile-playlists-btn");
+if (mobPlBtn) mobPlBtn.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const menu = document.getElementById("mobile-playlists-menu");
+    if (menu) menu.classList.add("show");
+};
+
+// cerrar menú playlists (desde el aspa X o desde el fondo oscuro)
+const closeMobileMenu = () => {
+    const menu = document.getElementById("mobile-playlists-menu");
+    if (menu) menu.classList.remove("show");
+};
+
+const closeBtn = document.getElementById("close-mobile-menu-btn");
+if (closeBtn) {
+    closeBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeMobileMenu();
+    };
+}
+
+document.getElementById("mobile-menu-overlay")?.addEventListener("click", closeMobileMenu);
 
 document.getElementById("playlist-options-btn").addEventListener("click", (e) => {
     e.stopPropagation();

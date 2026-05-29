@@ -1515,3 +1515,287 @@ body {
 .song-info:active {
     cursor: grabbing;
 }
+
+/* REPRODUCTOR CENTRADO Y ANCHO */
+.player-center {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 1000px;
+}
+
+.player-progress {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.progress-container {
+    flex: 1;
+    height: 6px;
+    background-color: #4d4d4d;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.progress-filled {
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 3px;
+    width: 0;
+}
+
+/* ====== RESPONSIVO MÓVIL ====== */
+
+.mobile-only, .mobile-bottom-menu {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-only {
+        display: block;
+    }
+
+    /* barra inferior neumórfica */
+    .sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 75px;
+        background-color: #1a1a1a;
+        padding: 0;
+        flex-direction: row;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        z-index: 10001;
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+        border-radius: 20px 20px 0 0;
+        display: flex !important;
+    }
+
+    .logo, .playlists-nav {
+        display: none !important;
+    }
+
+    .main-nav {
+        width: 100%;
+        height: 100%;
+    }
+
+    .main-nav ul {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main-nav li {
+        margin: 0;
+        flex: 1;
+    }
+
+    .main-nav a {
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+        padding: 0;
+        height: 100%;
+        background: none !important;
+    }
+
+    .main-nav a i {
+        font-size: 22px;
+    }
+
+    .main-nav a span {
+        display: none; /* solo iconos */
+    }
+
+    .main-nav li.active a i {
+        color: var(--primary-color);
+    }
+
+    /* reproductor móvil ultra-minimalista con barrita inferior */
+    .player {
+        bottom: 95px;
+        width: calc(100% - 24px);
+        left: 50%;
+        transform: translateX(-50%);
+        height: 85px; 
+        min-height: 85px;
+        border-radius: 24px;
+        display: grid !important;
+        grid-template-areas: "artwork details play";
+        grid-template-columns: 60px 1fr 60px;
+        align-items: center;
+        gap: 12px;
+        padding: 0 20px;
+        background-color: #1a1a1a !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        overflow: hidden; /* para que la barrita no se salga de las esquinas redondeadas */
+        border: 1px solid rgba(255,255,255,0.05);
+        position: fixed;
+    }
+
+    /* la pequeña barrita en la parte de abajo */
+    .player::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 4px; /* muy finita */
+        background-color: var(--primary-color);
+        width: var(--progress-percent, 0%);
+        transition: width 0.1s linear;
+    }
+
+    .player-left {
+        grid-area: artwork;
+        display: flex !important;
+        justify-content: flex-start;
+    }
+
+    .player-left .song-image {
+        width: 55px !important;
+        height: 55px !important;
+        margin: 0 !important;
+    }
+
+    /* texto grande y centrado en la única fila */
+    .player-left .song-details {
+        grid-area: details;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60%;
+        text-align: center;
+    }
+
+    .player-left .song-title {
+        font-size: 16px !important;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        color: white;
+    }
+
+    .player-left .song-artist {
+        font-size: 13px !important;
+        color: var(--text-secondary);
+    }
+
+    .player-center {
+        grid-area: play;
+        display: flex !important;
+        justify-content: flex-end !important;
+        width: auto !important;
+        margin: 0 !important;
+    }
+
+    .player-controls {
+        display: flex !important;
+        justify-content: flex-end !important;
+    }
+
+    .player-controls #prev-btn, .player-controls #next-btn {
+        display: none !important;
+    }
+
+    .play-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+        margin: 0 !important;
+    }
+
+    /* barra de progreso oculta en el mini */
+    .player-progress {
+        display: none !important;
+    }
+
+    .player-right {
+        display: none !important;
+    }
+
+    /* ajustes slideup móvil */
+    .player.expanded .player-center {
+        bottom: 140px !important; /* subir controles */
+        position: fixed;
+        left: 0;
+        right: 0;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    .player.expanded .player-controls {
+        display: flex !important;
+        gap: 40px;
+        justify-content: center;
+    }
+
+    .player.expanded .player-controls #prev-btn, 
+    .player.expanded .player-controls #next-btn {
+        display: flex !important;
+        font-size: 24px;
+        color: white;
+    }
+
+    .player.expanded .play-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 28px;
+    }
+
+    .player.expanded .player-progress {
+        display: flex !important;
+        width: 85% !important;
+        margin-top: 24px;
+    }
+
+    .player.expanded .player-progress .time {
+        display: block !important;
+        color: white;
+    }
+
+    .expanded-left {
+        display: none !important;
+    }
+
+    .expanded-content {
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 40px;
+    }
+
+    .large-cover {
+        max-width: 320px;
+        margin-top: 60px; /* bajar carátula */
+        margin-bottom: 12px; /* reducir espacio con título */
+    }
+
+    .expanded-info {
+        text-align: center;
+    }
+
+    .expanded-info h2 {
+        font-size: 26px;
+        margin-bottom: 2px;
+    }
+
+    .expanded-info h3 {
+        font-size: 18px;
+    }
+}

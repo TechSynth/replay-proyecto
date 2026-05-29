@@ -55,3 +55,23 @@
 - desarrollo de un flujo de seguridad multi-paso para la eliminación de cuenta, requiriendo confirmación textual ("borrar") y ejecutando el borrado en cascada de datos y archivos en la nube.
 - optimización de la coherencia visual: unificación del color verde corporativo (#1db954) en todos los controles interactivos y eliminación de iconos genéricos en favor de una imagen de fallback uniforme ("imagenplaylist.png").
 - auditoría y limpieza profunda del código fuente: eliminación de variables de estado redundantes, rutas de api no utilizadas y comentarios auto-referenciales, mejorando la legibilidad y siguiendo el tono de "estudiante en aprendizaje" para el tfg.
+- implementación de diseño responsivo completo: transformación del menú lateral en una barra de navegación inferior para dispositivos móviles, optimizando el espacio mediante el uso exclusivo de iconos.
+- creación de un sistema de acceso rápido a playlists en móvil mediante un overlay interactivo, permitiendo gestionar y crear listas sin perder de vista el reproductor.
+- optimización del reproductor expandido para pantallas pequeñas: simplificación de la interfaz ocultando la cola de reproducción para priorizar el arte y la información de la pista actual.
+- ajuste dinámico del layout móvil: reposicionamiento del reproductor flotante por encima de la barra de navegación y ocultación de elementos secundarios en la barra superior para mejorar la usabilidad táctil.
+- refinamiento extremo de la interfaz móvil: simplificación del reproductor eliminando botones de navegación secundaria y timestamps para priorizar una barra de progreso centrada al 60%.
+- evolución del menú lateral a una barra inferior con diseño neumórfico avanzado (gradientes e iluminación interna) para una experiencia táctil premium.
+- transformación del sistema de playlists en móvil: sustitución del overlay de pantalla completa por un menú de tipo "bottom sheet" más ágil, integrando un botón de creación (+) estilizado en verde.
+- limpieza de la interfaz de escritorio: eliminación de botones de gestión redundantes en la barra lateral para mantener un diseño más minimalista y enfocado al contenido.
+- rediseño integral de la interfaz móvil con enfoque en minimalismo y usabilidad táctil: implementación de una barra de navegación inferior neumórfica (solo iconos) para una navegación más intuitiva.
+- evolución del reproductor musical a un formato centralizado y protagonista, tanto en escritorio como en móvil, optimizando el uso del ancho de pantalla (hasta el 95%) para los controles principales.
+- simplificación estratégica del reproductor móvil: eliminación de controles secundarios y marcas de tiempo para priorizar una barra de progreso limpia y centrada al 60%.
+- creación de un sistema de gestión de playlists para móvil mediante un menú de tipo "bottom sheet" (panel emergente inferior) que incluye un botón de creación (+) estilizado en verde corporativo.
+- limpieza de la barra lateral en la versión de escritorio, eliminando botones de gestión redundantes para mantener una estética profesional y despejada acorde a los estándares del tfg.
+- mejora del reproductor móvil: integración del arte de la canción (artwork) en el reproductor mini, habilitando la expansión mediante gesto de clic directo sobre la imagen.
+- refinamiento del menú de playlists en móvil: adición de un botón de cierre (X) en la cabecera del panel para mejorar la navegación y coherencia visual con el resto de la aplicación.
+- corrección de interactividad en móvil: reforzamiento de los controladores de eventos para los botones de creación y cierre de playlists, garantizando su funcionamiento en navegadores táctiles.
+- ajustes de ergonomía visual: elevación de la posición del reproductor móvil y descenso equilibrado del arte de la canción para una mejor distribución del espacio en pantalla.
+- restauración y elevación de la interfaz móvil: reposicionamiento del reproductor a una altura de 150px (bottom) para optimizar el flujo visual con la barra inferior y ajuste del artwork para un centrado perfecto.
+- recuperación del botón de gestión de playlists en la versión web de escritorio, garantizando que la funcionalidad de creación sea accesible en todas las plataformas.
+- corrección de interactividad táctil: depuración de los manejadores onclick para el cierre y creación de playlists en dispositivos móviles, eliminando conflictos de propagación de eventos.
