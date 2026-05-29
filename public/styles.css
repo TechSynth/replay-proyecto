@@ -384,7 +384,7 @@ body {
         display: none;
     }
     
-    .playlists {
+    .playlists-nav {
         display: none;
     }
     
@@ -842,6 +842,27 @@ body {
     .col-album, .item-album {
         display: none;
     }
+    
+    .player-right {
+        display: none;
+    }
+    
+    .player-left {
+        flex: 2;
+    }
+    
+    .song-image {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .player-controls {
+        gap: 8px;
+    }
+    
+    .play-btn {
+        font-size: 24px;
+    }
 }
 
 /* estilos para playlists */
@@ -935,7 +956,6 @@ body {
 .playlist-item a {
     display: flex;
     align-items: center;
-    gap: 12px;
     padding: 8px 12px;
     color: var(--text-secondary);
     text-decoration: none;
@@ -1090,18 +1110,6 @@ body {
 .playlist-item.drag-over {
     background-color: rgba(255,255,255,0.2) !important;
     transform: scale(1.02);
-}
-
-/* botones de opciones en canciones */
-.song-card:hover .song-options-btn,
-.list-item:hover .song-card-image .list-item {
-    grid-template-columns: 60px 1fr 1fr 120px !important;
-}
-
-.col-options {
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 /* cursor para elementos arrastrables */

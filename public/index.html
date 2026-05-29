@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>rePLAY - Reproductor de Música</title>
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
@@ -104,11 +105,10 @@
                     </div>
                     <div id="library-list" class="songs-list" style="display: none;">
                         <div class="list-header">
-                            <div class="col-cover">#</div>
+                            <div class="col-cover"></div>
                             <div class="col-title">Título</div>
                             <div class="col-album">Álbum</div>
                             <div class="col-date">Fecha Subida</div>
-                            <div class="col-options"></div>
                         </div>
                         <div id="library-list-items">
                             <!-- items de lista -->
@@ -146,12 +146,11 @@
                         </div>
                     </div>
                     <div class="songs-list playlist-songs">
-                        <div class="list-header">
-                            <div class="col-cover">#</div>
+                        <div class="list-header" id="playlist-list-header">
+                            <div class="col-cover"></div>
                             <div class="col-title">Título</div>
                             <div class="col-album">Artista</div>
                             <div class="col-date"><i class="far fa-clock"></i></div>
-                            <div class="col-options"></div>
                         </div>
                         <div id="playlist-songs-list">
                             <!-- canciones de la playlist -->
@@ -225,12 +224,10 @@
     <footer class="player">
         <div class="player-left">
             <div class="song-info">
-                <div class="song-image">
-                    <i class="fas fa-music"></i>
-                </div>
+                <div class="song-image" style="background-color: transparent;"></div>
                 <div class="song-details">
-                    <div class="song-title" id="current-song-title">Selecciona una canción</div>
-                    <div class="song-artist" id="current-song-artist">-</div>
+                    <div class="song-title" id="current-song-title"></div>
+                    <div class="song-artist" id="current-song-artist"></div>
                 </div>
             </div>
         </div>

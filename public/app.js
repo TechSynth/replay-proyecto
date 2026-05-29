@@ -356,17 +356,20 @@ function playSong(song) {
 }
 
 function saveRecentSong(song) {
-    let recent = JSON.parse(localStorage.getItem('recent_songs') || '[]');
+    if (!appState.user) return;
+    const key = `recent_songs_${appState.user.id}`;
+    let recent = JSON.parse(localStorage.getItem(key) || '[]');
     recent = recent.filter(s => s.id !== song.id);
     recent.unshift(song);
     if (recent.length > 10) recent.pop();
-    localStorage.setItem('recent_songs', JSON.stringify(recent));
+    localStorage.setItem(key, JSON.stringify(recent));
     renderRecentSongs();
 }
 
 function renderRecentSongs() {
-    if (!elements.recentSongsGrid) return;
-    const recent = JSON.parse(localStorage.getItem('recent_songs') || '[]');
+    if (!elements.recentSongsGrid || !appState.user) return;
+    const key = `recent_songs_${appState.user.id}`;
+    const recent = JSON.parse(localStorage.getItem(key) || '[]');
     elements.recentSongsGrid.innerHTML = '';
     if (recent.length === 0) {
         elements.recentSongsGrid.innerHTML = '<p style="color:#666; padding: 20px;">No has escuchado canciones recientemente</p>';
@@ -660,6 +663,10 @@ async function showPlaylistDetail(id) {
 
 function renderPlaylistSongs(songs) {
     elements.playlistSongsList.innerHTML = '';
+    const header = document.getElementById('playlist-list-header');
+    if (header) {
+        header.style.display = songs.length === 0 ? 'none' : 'grid';
+    }
     if (songs.length === 0) {
         elements.playlistSongsList.innerHTML = '<div class="no-results">Esta playlist está vacía</div>';
         return;
@@ -668,7 +675,7 @@ function renderPlaylistSongs(songs) {
         const div = document.createElement('div');
         div.className = 'list-item';
         div.draggable = true;
-        div.innerHTML = '<div class="col-cover">' + (index + 1) + '</div><div class="col-title"><div class="item-info"><div class="item-name">' + song.titulo + '</div></div></div><div class="col-album">' + (song.artista_nombre || 'Artista Desconocido') + '</div><div class="col-date">' + formatTime(song.duracion) + '</div>';
+        div.innerHTML = '<div class="col-cover"></div><div class="col-title"><div class="item-info"><div class="item-name">' + song.titulo + '</div></div></div><div class="col-album">' + (song.artista_nombre || 'Artista Desconocido') + '</div><div class="col-date">' + formatTime(song.duracion) + '</div>';
         div.onclick = () => playSong(song);
         div.oncontextmenu = (e) => {
             e.preventDefault();
