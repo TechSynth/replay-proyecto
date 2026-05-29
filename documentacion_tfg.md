@@ -43,3 +43,15 @@
 - programación del reproductor musical para soportar salto de tiempo (seeking) interactuando directamente con la barra de progreso.
 - creación de un sistema de "canciones recientes" persistente en el navegador mediante localstorage, mostrando siempre el historial de las últimas 10 reproducciones en la página principal.
 - limpieza extensiva de código: estandarización de comentarios, eliminación de funciones no utilizadas, simplificación de mensajes y eliminación de lógicas redundantes para mejorar la mantenibilidad y humanidad del código.
+
+## día 29 de mayo
+- modernización estética completa del reproductor de música: transformación a un formato de "isla flotante" centrada con bordes redondeados y estilo neumorfista oscuro.
+- rediseño del modo expandido (slide-up) para operar a pantalla completa, optimizando el espacio mediante una distribución en dos columnas: cola de reproducción a la izquierda e información de pista a la derecha.
+- implementación de la animación "hero" (shared element transition) para el artwork, permitiendo que la carátula pequeña "vuele" y se expanda fluidamente hasta su posición gigante al abrir el reproductor, y regrese de forma simétrica al cerrarlo.
+- sincronización milimétrica de las transiciones visuales (300ms) para garantizar una experiencia de usuario rápida, reactiva y sin retardos (lag).
+- desarrollo de una lógica de transición lateral para el cambio de canciones en modo expandido, utilizando la técnica de clonación de nodos para evitar huecos vacíos o bloques grises entre carátulas.
+- creación de un sistema integral de gestión de perfil de usuario mediante un menú desplegable en la barra superior.
+- implementación de la funcionalidad de actualización de nombre de usuario con persistencia en rds y sincronización instantánea de la interfaz.
+- desarrollo de un flujo de seguridad multi-paso para la eliminación de cuenta, requiriendo confirmación textual ("borrar") y ejecutando el borrado en cascada de datos y archivos en la nube.
+- optimización de la coherencia visual: unificación del color verde corporativo (#1db954) en todos los controles interactivos y eliminación de iconos genéricos en favor de una imagen de fallback uniforme ("imagenplaylist.png").
+- auditoría y limpieza profunda del código fuente: eliminación de variables de estado redundantes, rutas de api no utilizadas y comentarios auto-referenciales, mejorando la legibilidad y siguiendo el tono de "estudiante en aprendizaje" para el tfg.

@@ -1,7 +1,6 @@
 // guarda las cosas de la app mientras se usa
 const appState = {
     currentSong: null,
-
     currentTime: 0,
     duration: 0,
     volume: 0.7,
@@ -12,7 +11,10 @@ const appState = {
     viewMode: "grid" // grid o list
 };
 
-// manda el token en las peticiones
+/**
+ * manda el token en las peticiones al servidor
+ * se usa para que el servidor sepa quién está pidiendo los datos
+ */
 function getAuthHeaders() {
     const token = auth.getToken();
     const headers = {
@@ -33,7 +35,6 @@ const elements = {
     playBtn: document.getElementById("play-btn"),
     prevBtn: document.getElementById("prev-btn"),
     nextBtn: document.getElementById("next-btn"),
-
     currentSongTitle: document.getElementById("current-song-title"),
     currentSongArtist: document.getElementById("current-song-artist"),
     currentTime: document.getElementById("current-time"),
@@ -55,8 +56,8 @@ const elements = {
     playlistDetailView: document.getElementById("playlist-detail-view"),
     playlistSongsList: document.getElementById("playlist-songs-list"),
     playlistName: document.getElementById("playlist-name"),
-    playlistCover: document.getElementById("playlist-cover"),
-    progressContainer: document.getElementById("progress-container"),
+    playlistCover: document.getElementById("playlist-cover"), 
+    progressContainer: document.getElementById("progress-container"), 
     recentSongsGrid: document.getElementById("recent-songs-grid"),
     // cosas del reproductor cuando se hace grande
     mainPlayer: document.getElementById("main-player"),
@@ -70,8 +71,10 @@ const elements = {
     expandedCoverContainer: document.getElementById("expanded-cover-container")
 };
 
-// llamadas al servidor
-
+/**
+ * intenta sacar la info del archivo mp3 antes de subirlo
+ * analiza titulo, artista y si tiene carátula
+ */
 async function analyzeFile(file) {
     const status = elements.uploadStatus;
     const metadataFields = document.getElementById("metadata-fields");
@@ -94,7 +97,7 @@ async function analyzeFile(file) {
             body: formData
         });
 
-        // maneja errores para evitar fallos 404/500 antes de intentar parsear json
+        // maneja errores para evitar fallos antes de intentar parsear json
         if (!response.ok) {
             const errorText = await response.text();
             console.error("error del servidor:", errorText);
@@ -106,11 +109,11 @@ async function analyzeFile(file) {
         if (data.success) {
             status.style.display = "none";
             metadataFields.style.display = "block";
-
+            
             document.getElementById("upload-title").value = data.data.titulo || "";
             document.getElementById("upload-artist").value = data.data.artista || "";
             document.getElementById("upload-album").value = data.data.album || "";
-
+            
             if (data.data.genero) {
                 const genreSelect = document.getElementById("upload-genre");
                 const genreLower = data.data.genero.toLowerCase();
@@ -145,6 +148,10 @@ async function analyzeFile(file) {
     }
 }
 
+/**
+ * sube la canción y la imagen al servidor
+ * el servidor se encarga de mandarlo a amazon s3
+ */
 async function uploadSong(formData) {
     const status = elements.uploadStatus;
     const submitBtn = document.getElementById("upload-submit-btn");
@@ -175,7 +182,7 @@ async function uploadSong(formData) {
                 document.getElementById("metadata-fields").style.display = "none";
                 status.style.display = "none";
             }, 3000);
-
+            
             await fetchSongs();
             if (elements.libraryView.style.display !== "none") await fetchLibrary();
         } else {
@@ -191,6 +198,9 @@ async function uploadSong(formData) {
     }
 }
 
+/**
+ * pide todas las canciones disponibles al servidor
+ */
 async function fetchSongs() {
     try {
         const response = await fetch("/api/canciones", {
@@ -198,7 +208,7 @@ async function fetchSongs() {
         });
         if (!response.ok) throw new Error(`${response.status}`);
         const data = await response.json();
-
+        
         if (data.success) {
             appState.songs = data.data;
             renderSongs(data.data);
@@ -208,20 +218,23 @@ async function fetchSongs() {
     }
 }
 
+/**
+ * carga las canciones que ha subido el usuario actual
+ */
 async function fetchLibrary() {
     try {
         console.log("cargando biblioteca...");
         const response = await fetch("/api/library", {
             headers: getAuthHeaders()
         });
-
+        
         if (!response.ok) {
             console.error("error en fetch library:", response.status);
             return;
         }
 
         const data = await response.json();
-
+        
         if (data.success) {
             appState.librarySongs = data.data;
             renderLibrary(data.data);
@@ -231,6 +244,9 @@ async function fetchLibrary() {
     }
 }
 
+/**
+ * busca canciones por título o artista
+ */
 async function searchSongs(query) {
     try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
@@ -248,7 +264,6 @@ async function searchSongs(query) {
 }
 
 // dibuja las canciones en la cuadrícula
-
 function renderSongs(songs) {
     elements.songsGrid.innerHTML = ``;
     if (songs.length === 0) {
@@ -260,23 +275,29 @@ function renderSongs(songs) {
     });
 }
 
+/**
+ * dibuja las canciones de la biblioteca en modo rejilla y lista
+ */
 function renderLibrary(songs) {
     elements.libraryGrid.innerHTML = ``;
     elements.libraryListItems.innerHTML = ``;
-
+    
     if (songs.length === 0) {
         const msg = `<p style="padding: 20px; color: #b3b3b3;">no has subido ninguna canción todavía.</p>`;
         elements.libraryGrid.innerHTML = msg;
         elements.libraryListItems.innerHTML = msg;
         return;
     }
-
+    
     songs.forEach((song, index) => {
         elements.libraryGrid.appendChild(createSongCard(song));
         elements.libraryListItems.appendChild(createListItem(song, index + 1));
     });
 }
 
+/**
+ * crea el elemento visual de una canción para la rejilla
+ */
 function createSongCard(song) {
     const card = document.createElement("div");
     card.className = "song-card";
@@ -290,18 +311,22 @@ function createSongCard(song) {
         e.dataTransfer.setData("songId", song.id);
         e.dataTransfer.effectAllowed = "copy";
     });
-
+    
     const imageUrl = song.imagen_url || "img/imagenPlaylist.png";
-
+    
     card.innerHTML = `<div class="song-card-image">
         <img src="${imageUrl}" alt="${song.titulo}">
         </div>
         <div class="song-card-title">${song.titulo}</div>
         <div class="song-card-artist">${song.artista_nombre || "artista desconocido"}</div>`;
-
+    
     return card;
 }
 
+/**
+ * crea un item de lista para la biblioteca o la cola
+ * permite ocultar la fecha si se usa en la cola del reproductor
+ */
 function createListItem(song, index, showDate = true) {
     const item = document.createElement("div");
     item.className = "list-item";
@@ -343,6 +368,9 @@ function renderSearchResults(results) {
 // la lógica para que suene la música
 const audioPlayer = new Audio();
 
+/**
+ * actualiza las imágenes y textos del reproductor mini y expandido
+ */
 function updateArtworkDOM(song) {
     const imageUrl = song.imagen_url || "img/imagenPlaylist.png";
     elements.expandTrigger.innerHTML = `<img src="${imageUrl}" alt="cover">`;
@@ -351,70 +379,79 @@ function updateArtworkDOM(song) {
     elements.expandedArtist.textContent = song.artista_nombre || "artista desconocido";
 }
 
+/**
+ * animación suave cuando se cambia de canción en el modo grande
+ */
 function animateArtworkChange(newSong, direction) {
     const container = elements.expandedCoverContainer;
     const oldContent = container.querySelector("img");
-
+    
     if (oldContent && elements.mainPlayer.classList.contains("expanded")) {
         const clone = oldContent.cloneNode(true);
         clone.classList.add("clone-artwork");
         container.appendChild(clone);
-
+        
         updateArtworkDOM(newSong);
         const newContent = container.querySelector("img:not(.clone-artwork)");
-
+        
         const inClass = direction === "next" ? "slide-in-right" : "slide-in-left";
         const outClass = direction === "next" ? "slide-out-left" : "slide-out-right";
-
+        
         newContent.classList.add(inClass);
         clone.classList.add(outClass);
-
+        
         setTimeout(() => {
             newContent.classList.remove(inClass);
             if (clone.parentNode) container.removeChild(clone);
-        }, 600);
+        }, 300);
     } else {
         updateArtworkDOM(newSong);
     }
 }
 
+/**
+ * función principal para reproducir una pista
+ * maneja el streaming desde el servidor
+ */
 function playSong(song, direction = null) {
     if (appState.currentSong?.id === song.id) {
         togglePlay();
         return;
     }
-
+    
     if (direction) {
         animateArtworkChange(song, direction);
     } else {
         updateArtworkDOM(song);
     }
-
+    
     appState.currentSong = song;
-
     saveRecentSong(song);
-
+    
     audioPlayer.src = "/api/music/stream/" + song.id;
     audioPlayer.volume = appState.volume;
     audioPlayer.play().catch(err => console.error("error al reproducir:", err));
-
+    
     elements.currentSongTitle.textContent = song.titulo;
     elements.currentSongArtist.textContent = song.artista_nombre || "artista desconocido";
-
+    
     document.querySelector("#play-btn i").className = "fas fa-pause";
-
+    
     audioPlayer.ontimeupdate = () => {
         appState.currentTime = audioPlayer.currentTime;
         appState.duration = audioPlayer.duration || song.duracion || 0;
         updateProgress();
     };
     audioPlayer.onended = () => nextSong();
-
+    
     if (elements.mainPlayer.classList.contains("expanded")) {
         renderQueue();
     }
 }
 
+/**
+ * guarda la canción en el historial del navegador
+ */
 function saveRecentSong(song) {
     if (!appState.user) return;
     const key = `recent_songs_${appState.user.id}`;
@@ -426,6 +463,9 @@ function saveRecentSong(song) {
     renderRecentSongs();
 }
 
+/**
+ * muestra las últimas canciones escuchadas
+ */
 function renderRecentSongs() {
     if (!elements.recentSongsGrid || !appState.user) return;
     const key = `recent_songs_${appState.user.id}`;
@@ -444,11 +484,9 @@ function togglePlay() {
     if (!appState.currentSong) return;
     if (audioPlayer.paused) {
         audioPlayer.play();
-
         document.querySelector("#play-btn i").className = "fas fa-pause";
     } else {
         audioPlayer.pause();
-
         document.querySelector("#play-btn i").className = "fas fa-play";
     }
 }
@@ -489,7 +527,6 @@ function formatTime(seconds) {
 }
 
 // para movernos entre las secciones de la web
-
 function switchView(viewName) {
     if (elements.mainPlayer.classList.contains("expanded")) {
         togglePlayerExpansion();
@@ -533,7 +570,6 @@ function toggleLibraryView(mode) {
 }
 
 // gestión de mis listas de canciones
-
 async function fetchPlaylists(userId) {
     try {
         const response = await fetch(`/api/usuarios/${userId}/playlists`, {
@@ -555,7 +591,7 @@ function renderPlaylists() {
         const li = document.createElement("li");
         li.className = "playlist-item";
         li.innerHTML = `<a href="#" data-playlist-id="${playlist.id}"><span>${playlist.nombre}</span></a>`;
-
+        
         const link = li.querySelector("a");
         link.addEventListener("click", (e) => {
             e.preventDefault();
@@ -615,7 +651,6 @@ if (playerSongInfo) {
         }
     });
 
-    // menú contextual para el reproductor también
     playerSongInfo.addEventListener("contextmenu", (e) => {
         if (appState.currentSong) {
             e.preventDefault();
@@ -645,6 +680,9 @@ async function addSongToPlaylist(playlistId, songId) {
     }
 }
 
+/**
+ * muestra el menú de "añadir a playlist" al hacer clic derecho
+ */
 function showContextMenu(e, songId, song = null) {
     if (e) e.stopPropagation();
     const menu = document.getElementById("song-context-menu");
@@ -672,7 +710,7 @@ function showContextMenu(e, songId, song = null) {
     let x = e.clientX;
     let y = e.clientY;
     const menuWidth = 200;
-    const menuHeight = 150;
+    const menuHeight = 150; 
     if (x + menuWidth > window.innerWidth) x -= menuWidth;
     if (y + menuHeight > window.innerHeight) y -= menuHeight;
     menu.style.left = x + "px";
@@ -697,12 +735,11 @@ async function showPlaylistDetail(id) {
             appState.currentPlaylist = playlist;
 
             switchView("playlist-detail");
-
+            
             elements.playlistName.textContent = playlist.nombre;
             elements.playlistName.dataset.id = playlist.id;
             elements.playlistCover.src = playlist.imagen_url || "img/imagenPlaylist.png";
-
-            // resaltar en el menú lateral
+            
             document.querySelectorAll(".playlist-item").forEach(li => {
                 if (li.querySelector("a").dataset.playlistId == id) {
                     li.classList.add("active");
@@ -750,8 +787,10 @@ function renderPlaylistSongs(songs) {
     });
 }
 
+/**
+ * actualiza el nombre de la playlist en el servidor
+ */
 async function updatePlaylistTitle(id, newName) {
-    // tengo que usar formdata por culpa del sistema de subida de imágenes
     const formData = new FormData();
     formData.append("nombre", newName);
 
@@ -766,7 +805,6 @@ async function updatePlaylistTitle(id, newName) {
         const result = await response.json();
         if (result.success) {
             elements.playlistName.textContent = result.data.nombre;
-            // actualizo en el menú lateral
             const playlist = appState.playlists.find(p => p.id == id);
             if (playlist) playlist.nombre = result.data.nombre;
             renderPlaylists();
@@ -810,7 +848,6 @@ async function updatePlaylistImage(id, file) {
         if (result.success) {
             const newImageUrl = result.data.imagen_url || "img/imagenPlaylist.png";
             elements.playlistCover.src = newImageUrl;
-            // guardo la nueva imagen en mi lista local
             const playlist = appState.playlists.find(p => p.id == id);
             if (playlist) playlist.imagen_url = result.data.imagen_url;
             if (appState.currentPlaylist && appState.currentPlaylist.id == id) {
@@ -822,71 +859,68 @@ async function updatePlaylistImage(id, file) {
     }
 }
 
-// intentando que las animaciones queden chulas
+/**
+ * animación "hero" simétrica para el modo expandido
+ * sincroniza el vuelo de la carátula con la minimización del fondo
+ */
 function togglePlayerExpansion() {
     const isExpanding = !elements.mainPlayer.classList.contains("expanded");
-
+    
     if (isExpanding) {
-        // --- apertura (mismo funcionamiento exitoso) ---
+        // --- apertura (vuelo hacia arriba) ---
         const miniRect = elements.expandTrigger.getBoundingClientRect();
         elements.mainPlayer.classList.add("expanded");
         renderQueue();
-
+        
         const largeRect = elements.expandedCoverContainer.getBoundingClientRect();
-        const dx = (miniRect.left + miniRect.width / 2) - (largeRect.left + largeRect.width / 2);
-        const dy = (miniRect.top + miniRect.height / 2) - (largeRect.top + largeRect.height / 2);
+        const dx = (miniRect.left + miniRect.width/2) - (largeRect.left + largeRect.width/2);
+        const dy = (miniRect.top + miniRect.height/2) - (largeRect.top + largeRect.height/2);
         const scale = miniRect.width / largeRect.width;
-
+        
         elements.expandedCoverContainer.style.transition = "none";
         elements.expandedCoverContainer.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
-
+        
         void elements.expandedCoverContainer.offsetWidth;
-
+        
         elements.expandedCoverContainer.style.transition = "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease";
         elements.expandedCoverContainer.style.transform = "none";
         elements.expandedCoverContainer.style.opacity = "1";
-
+        
         elements.expandTrigger.style.opacity = "0";
     } else {
-        // --- cierre simétrico (snap-and-animate) ---
-        // 1. capturo la posición de la carátula grande ahora mismo
+        // --- cierre simétrico (vuelo de regreso) ---
         const largeRectGlobal = elements.expandedCoverContainer.getBoundingClientRect();
-
-        // 2. quito el modo grande de golpe para saber dónde está el reproductor pequeño
+        
         elements.mainPlayer.style.transition = "none";
         elements.mainPlayer.classList.remove("expanded");
         void elements.mainPlayer.offsetWidth;
-
+        
         const miniRectGlobal = elements.expandTrigger.getBoundingClientRect();
         const largeContainerRectFloating = elements.expandedCoverContainer.getBoundingClientRect();
-
-        // 3. hago que la carátula "salte" visualmente a donde estaba antes de quitar el modo grande
+        
         const snapDx = (largeRectGlobal.left + largeRectGlobal.width / 2) - (largeContainerRectFloating.left + largeContainerRectFloating.width / 2);
         const snapDy = (largeRectGlobal.top + largeRectGlobal.height / 2) - (largeContainerRectFloating.top + largeContainerRectFloating.height / 2);
         const snapScale = largeRectGlobal.width / largeContainerRectFloating.width;
-
+        
         elements.expandedCoverContainer.style.transition = "none";
         elements.expandedCoverContainer.style.transform = `translate(${snapDx}px, ${snapDy}px) scale(${snapScale})`;
         void elements.expandedCoverContainer.offsetWidth;
-
-        // 4. preparo el viaje hacia el mini artwork del reproductor flotante
+        
         const targetDx = (miniRectGlobal.left + miniRectGlobal.width / 2) - (largeContainerRectFloating.left + largeContainerRectFloating.width / 2);
         const targetDy = (miniRectGlobal.top + miniRectGlobal.height / 2) - (largeContainerRectFloating.top + largeContainerRectFloating.height / 2);
         const targetScale = miniRectGlobal.width / largeContainerRectFloating.width;
-
-        // 5. activo el cierre suave y lanzo las animaciones juntas
+        
         elements.mainPlayer.classList.add("closing");
         elements.mainPlayer.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
         elements.expandedCoverContainer.style.transition = "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease";
-
+        
         requestAnimationFrame(() => {
             elements.mainPlayer.classList.remove("expanded");
             elements.expandedCoverContainer.style.transform = `translate(${targetDx}px, ${targetDy}px) scale(${targetScale})`;
             elements.expandedCoverContainer.style.opacity = "0";
         });
-
+        
         setTimeout(() => {
-            // dejo todo como estaba para la próxima vez
             elements.mainPlayer.classList.remove("closing");
             elements.expandedCoverContainer.style.transition = "none";
             elements.expandedCoverContainer.style.transform = "";
@@ -896,18 +930,21 @@ function togglePlayerExpansion() {
     }
 }
 
+/**
+ * dibuja las próximas pistas en el modo grande sin mostrar fechas
+ */
 function renderQueue() {
     elements.queueList.innerHTML = ``;
     if (!appState.currentSong) return;
-
+    
     const currentIndex = appState.songs.findIndex(s => s.id === appState.currentSong.id);
     const nextSongs = appState.songs.slice(currentIndex + 1);
-
+    
     if (nextSongs.length === 0) {
         elements.queueList.innerHTML = `<p style="color: #666; padding: 20px;">no hay más canciones en cola por ahora</p>`;
         return;
     }
-
+    
     nextSongs.forEach(song => {
         const item = createListItem(song, "", false);
         elements.queueList.appendChild(item);
@@ -966,7 +1003,6 @@ const userMenu = {
     finalDeleteBtn: document.getElementById("final-delete-btn")
 };
 
-// abrir y cerrar el menú desplegable
 userMenu.trigger.addEventListener("click", (e) => {
     e.stopPropagation();
     userMenu.dropdown.classList.toggle("show");
@@ -976,7 +1012,6 @@ document.addEventListener("click", () => {
     userMenu.dropdown.classList.remove("show");
 });
 
-// muestra las ventanas de opciones
 document.getElementById("change-name-btn").addEventListener("click", (e) => {
     e.preventDefault();
     userMenu.newNameInput.value = appState.user.nombre;
@@ -998,12 +1033,10 @@ function closeModal() {
     userMenu.modalContainer.style.display = "none";
 }
 
-// para quitar las ventanas de la vista
 document.getElementById("cancel-name-btn").addEventListener("click", closeModal);
 document.getElementById("cancel-delete-1").addEventListener("click", closeModal);
 document.getElementById("cancel-delete-2").addEventListener("click", () => showModal(userMenu.modalDelete1));
 
-// actualizo el nombre si el usuario quiere cambiarlo
 document.getElementById("save-name-btn").addEventListener("click", async () => {
     const nuevoNombre = userMenu.newNameInput.value.trim();
     if (!nuevoNombre) return;
@@ -1014,9 +1047,9 @@ document.getElementById("save-name-btn").addEventListener("click", async () => {
             headers: getAuthHeaders(),
             body: JSON.stringify({ nombre: nuevoNombre })
         });
-
+        
         if (!response.ok) throw new Error("error en la petición");
-
+        
         const data = await response.json();
         if (data.success) {
             appState.user.nombre = nuevoNombre;
@@ -1046,9 +1079,9 @@ document.getElementById("final-delete-btn").addEventListener("click", async () =
             method: "DELETE",
             headers: getAuthHeaders()
         });
-
+        
         if (!response.ok) throw new Error("error al borrar la cuenta");
-
+        
         const data = await response.json();
         if (data.success) {
             auth.logout();
@@ -1057,7 +1090,6 @@ document.getElementById("final-delete-btn").addEventListener("click", async () =
     } catch (err) { console.error("error al eliminar cuenta:", err); }
 });
 
-// cerrando la sesión del usuario
 document.getElementById("logout-link").addEventListener("click", (e) => {
     e.preventDefault();
     auth.logout();
@@ -1083,7 +1115,6 @@ document.querySelectorAll("[data-view]").forEach(link => {
     });
 });
 
-// detecta clics del usuario de playlist
 document.getElementById("create-playlist-btn").addEventListener("click", createNewPlaylist);
 
 document.getElementById("playlist-options-btn").addEventListener("click", (e) => {
@@ -1107,7 +1138,6 @@ document.getElementById("share-playlist-btn").addEventListener("click", (e) => {
     alert("funcionalidad de compartir no disponible todavía");
 });
 
-// puedes cambiar el nombre de la playlist haciendo clic directo
 elements.playlistName.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
         e.preventDefault();
@@ -1134,8 +1164,7 @@ document.getElementById("playlist-image-input").addEventListener("change", (e) =
     }
 });
 
-// preparando todo para cuando la página carga
-
+// inicializacion de la página
 async function init() {
     if (!auth.isAuthenticated()) {
         window.location.href = "/login";
@@ -1144,7 +1173,7 @@ async function init() {
     const user = auth.getUser();
     document.getElementById("user-name").textContent = user.nombre || "usuario";
     appState.user = user;
-
+    
     await fetchSongs();
     await fetchPlaylists(user.id); renderRecentSongs();
 }
