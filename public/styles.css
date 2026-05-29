@@ -485,9 +485,8 @@ body {
 }
 
 .expanded-left h3 {
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: var(--text-secondary);
+    font-size: 18px;
+    color: #FFFFFF;
     margin-bottom: 24px;
 }
 

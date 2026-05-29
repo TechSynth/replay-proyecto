@@ -21,7 +21,7 @@ exports.upload = multer({
     limits: { fileSize: 10 * 1024 * 1024 } // 10mb limite
 });
 
-// esto lo uso para poder subir varios archivos a la vez
+// permite subir audio e imagen de forma simultánea
 exports.uploadFields = exports.upload.fields([
     { name: "audio", maxCount: 1 },
     { name: "imagen", maxCount: 1 }

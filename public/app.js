@@ -302,7 +302,7 @@ function createSongCard(song) {
     return card;
 }
 
-function createListItem(song, index) {
+function createListItem(song, index, showDate = true) {
     const item = document.createElement("div");
     item.className = "list-item";
     item.draggable = true;
@@ -322,7 +322,9 @@ function createListItem(song, index) {
     });
 
     const imageUrl = song.imagen_url || "img/imagenPlaylist.png";
-    item.innerHTML = `<div class="col-cover"><div class="item-cover"><img src="${imageUrl}" alt="${song.titulo}"></div></div><div class="item-info"><span class="item-title">${song.titulo}</span><span class="item-artist">${song.artista_nombre || "artista desconocido"}</span></div><div class="item-album">${song.album_nombre || "sin álbum"}</div><div class="col-date">${date}</div>`;
+    const dateHtml = showDate ? `<div class="col-date">${date}</div>` : "";
+    
+    item.innerHTML = `<div class="col-cover"><div class="item-cover"><img src="${imageUrl}" alt="${song.titulo}"></div></div><div class="item-info"><span class="item-title">${song.titulo}</span><span class="item-artist">${song.artista_nombre || "artista desconocido"}</span></div><div class="item-album">${song.album_nombre || "sin álbum"}</div>${dateHtml}`;
 
     return item;
 }
@@ -907,7 +909,7 @@ function renderQueue() {
     }
 
     nextSongs.forEach(song => {
-        const item = createListItem(song, "");
+        const item = createListItem(song, "", false);
         elements.queueList.appendChild(item);
     });
 }
@@ -1025,7 +1027,7 @@ document.getElementById("save-name-btn").addEventListener("click", async () => {
     } catch (err) { console.error("error actualizando nombre:", err); }
 });
 
-// cuidado que aquí se borra la cuenta
+// aviso de borrado definitivo de cuenta
 document.getElementById("confirm-delete-1").addEventListener("click", () => {
     userMenu.deleteConfirmInput.value = "";
     userMenu.finalDeleteBtn.disabled = true;
