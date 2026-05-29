@@ -60,13 +60,54 @@
                     <input type="text" id="search-input" placeholder="¿Qué quieres escuchar?">
                     <button id="search-btn">Buscar</button>
                 </div>
-                <div class="user-menu">
-                    <span id="user-name">Usuario Demo</span>
-                    <button id="logout-btn" class="logout-btn" title="Cerrar sesión">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
+                <div class="user-menu" id="user-menu-container">
+                    <div class="user-dropdown-trigger" id="user-dropdown-trigger">
+                        <span id="user-name">Usuario Demo</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <div class="user-dropdown-content" id="user-dropdown">
+                        <a href="#" id="change-name-btn"><i class="fas fa-user-edit"></i> Cambiar Nombre</a>
+                        <a href="#" id="delete-account-btn" class="danger"><i class="fas fa-user-times"></i> Borrar Cuenta</a>
+                        <hr>
+                        <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                    </div>
                 </div>
             </header>
+
+            <!-- Modales de Usuario -->
+            <div id="modal-container" class="modal-container">
+                <!-- Modal Cambiar Nombre -->
+                <div id="modal-name" class="modal-content-user">
+                    <h3>Cambiar Nombre</h3>
+                    <input type="text" id="new-name-input" placeholder="Nuevo nombre">
+                    <div class="modal-actions">
+                        <button class="modal-btn-cancel" id="cancel-name-btn">Cancelar</button>
+                        <button class="modal-btn-save" id="save-name-btn">Guardar</button>
+                    </div>
+                </div>
+
+                <!-- Modal Borrar Cuenta (Paso 1) -->
+                <div id="modal-delete-1" class="modal-content-user">
+                    <h3 class="danger-text">¿Borrar cuenta?</h3>
+                    <p>Esta acción es irreversible. Se borrarán tus datos y canciones subidas.</p>
+                    <div class="modal-actions">
+                        <button class="modal-btn-cancel" id="cancel-delete-1">No, cancelar</button>
+                        <button class="modal-btn-danger" id="confirm-delete-1">Sí, continuar</button>
+                    </div>
+                </div>
+
+                <!-- Modal Borrar Cuenta (Paso 2) -->
+                <div id="modal-delete-2" class="modal-content-user">
+                    <h3>Confirmación final</h3>
+                    <p>Escribe <strong>Borrar</strong> para confirmar la eliminación definitiva.</p>
+                    <input type="text" id="delete-confirm-input" placeholder="Escribe 'Borrar'">
+                    <div class="modal-actions">
+                        <button class="modal-btn-cancel" id="cancel-delete-2">Volver</button>
+                        <button class="modal-btn-danger" id="final-delete-btn" disabled>Borrar definitivamente</button>
+                    </div>
+                </div>
+            </div>
 
             <div class="content-area" id="content-area">
                 <section id="home-view">
@@ -241,8 +282,8 @@
                         <img src="img/imagenPlaylist.png" id="expanded-cover-img" alt="Portada grande">
                     </div>
                     <div class="expanded-info">
-                        <h2 id="expanded-title">Título de la Canción</h2>
-                        <h3 id="expanded-artist">Artista</h3>
+                        <h2 id="expanded-title"></h2>
+                        <h3 id="expanded-artist"></h3>
                     </div>
                 </div>
             </div>
@@ -254,8 +295,8 @@
                     <img src="img/imagenPlaylist.png" alt="Mini portada">
                 </div>
                 <div class="song-details">
-                    <div class="song-title" id="current-song-title">Cargando...</div>
-                    <div class="song-artist" id="current-song-artist">Selecciona una canción</div>
+                    <div class="song-title" id="current-song-title"></div>
+                    <div class="song-artist" id="current-song-artist"></div>
                 </div>
             </div>
         </div>

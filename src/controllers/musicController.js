@@ -296,29 +296,29 @@ exports.updatePlaylist = async (req, res) => {
             imageUrl = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
         }
 
-        let query = 'UPDATE playlists SET ';
         const params = [];
+        let queryParts = [];
+        
         if (nombre) {
-            query += 'nombre = ?, ';
+            queryParts.push('nombre = ?');
             params.push(nombre);
         }
         if (imageUrl) {
-            query += 'imagen_url = ?, ';
+            queryParts.push('imagen_url = ?');
             params.push(imageUrl);
         }
         
-        // quitar ultima coma
-        query = query.slice(0, -2);
-        query += ' WHERE id = ? AND usuario_id = ?';
-        params.push(id, req.user.id);
-
-        if (params.length > 2) {
+        if (queryParts.length > 0) {
+            const query = `UPDATE playlists SET ${queryParts.join(', ')} WHERE id = ? AND usuario_id = ?`;
+            params.push(id, req.user.id);
             await pool.execute(query, params);
         }
 
-        res.json({ success: true, data: { id, nombre, imagen_url: imageUrl } });
+        // Obtener objeto actualizado para devolverlo completo
+        const [rows] = await pool.execute('SELECT * FROM playlists WHERE id = ?', [id]);
+        res.json({ success: true, data: rows[0] });
     } catch (err) {
-        console.error(err);
+        console.error('Error actualizando playlist:', err);
         res.status(500).json({ success: false, error: 'error al actualizar playlist' });
     }
 };

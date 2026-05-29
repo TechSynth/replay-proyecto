@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // rutas
 app.use('/api/auth', authRoutes);
 app.use('/api', musicRoutes);
-console.log('rutas de musica cargadas en /api');
+console.log('Rutas de autenticación y música cargadas.');
 
 // front
 app.get('/', (req, res) => {

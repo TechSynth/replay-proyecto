@@ -100,3 +100,44 @@ exports.getCurrentUser = async (req, res) => {
         res.status(500).json({ success: false, error: 'error de sesion' });
     }
 };
+
+exports.updateName = async (req, res) => {
+    console.log('Petición recibida: updateName para ID', req.user.id);
+    try {
+        const { nombre } = req.body;
+        if (!nombre) return res.status(400).json({ success: false, error: 'falta el nombre' });
+
+        await pool.execute('UPDATE usuarios SET nombre = ? WHERE id = ?', [nombre, req.user.id]);
+        res.json({ success: true, message: 'nombre actualizado' });
+    } catch (err) {
+        console.error('Error en updateName:', err);
+        res.status(500).json({ success: false, error: 'error al actualizar nombre' });
+    }
+};
+
+exports.deleteAccount = async (req, res) => {
+    console.log('Petición recibida: deleteAccount para ID', req.user.id);
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const usuario_id = req.user.id;
+
+        // 1. Borrar canciones subidas por el usuario (el esquema tiene SET NULL por defecto)
+        await connection.execute('DELETE FROM canciones WHERE subida_por_usuario_id = ?', [usuario_id]);
+
+        // 2. Borrar el usuario (esto disparará cascadas en playlists, historial, favoritos)
+        await connection.execute('DELETE FROM usuarios WHERE id = ?', [usuario_id]);
+
+        await connection.commit();
+        console.log('Usuario eliminado correctamente:', usuario_id);
+        res.json({ success: true, message: 'cuenta y datos eliminados correctamente' });
+    } catch (err) {
+        if (connection) await connection.rollback();
+        console.error('Error en deleteAccount:', err);
+        res.status(500).json({ success: false, error: 'error al eliminar la cuenta' });
+    } finally {
+        if (connection) connection.release();
+    }
+};

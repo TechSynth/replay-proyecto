@@ -196,7 +196,7 @@ async function fetchSongs() {
         const response = await fetch('/api/canciones', {
             headers: getAuthHeaders()
         });
-        if (!response.ok) throw new Error('404');
+        if (!response.ok) throw new Error(`${response.status}`);
         const data = await response.json();
         
         if (data.success) {
@@ -749,18 +749,24 @@ function renderPlaylistSongs(songs) {
 }
 
 async function updatePlaylistTitle(id, newName) {
+    // Usar FormData porque el backend usa Multer (uploadFields) en esta ruta
+    const formData = new FormData();
+    formData.append('nombre', newName);
+
     try {
         const response = await fetch(`/api/playlists/${id}`, {
             method: 'PUT',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ nombre: newName })
+            headers: {
+                'Authorization': `Bearer ${auth.getToken()}`
+            },
+            body: formData
         });
         const result = await response.json();
         if (result.success) {
-            elements.playlistName.textContent = newName;
+            elements.playlistName.textContent = result.data.nombre;
             // actualizar en sidebar
             const playlist = appState.playlists.find(p => p.id == id);
-            if (playlist) playlist.nombre = newName;
+            if (playlist) playlist.nombre = result.data.nombre;
             renderPlaylists();
         }
     } catch (err) {
@@ -800,10 +806,14 @@ async function updatePlaylistImage(id, file) {
         });
         const result = await response.json();
         if (result.success) {
-            elements.playlistCover.src = result.data.imagen_url;
+            const newImageUrl = result.data.imagen_url || 'img/imagenPlaylist.png';
+            elements.playlistCover.src = newImageUrl;
             // actualizar en cache local
             const playlist = appState.playlists.find(p => p.id == id);
             if (playlist) playlist.imagen_url = result.data.imagen_url;
+            if (appState.currentPlaylist && appState.currentPlaylist.id == id) {
+                appState.currentPlaylist.imagen_url = result.data.imagen_url;
+            }
         }
     } catch (err) {
         console.error('error subiendo imagen:', err);
@@ -815,6 +825,7 @@ function togglePlayerExpansion() {
     const isExpanding = !elements.mainPlayer.classList.contains('expanded');
     
     if (isExpanding) {
+        // --- APERTURA (Mismo funcionamiento exitoso) ---
         const miniRect = elements.expandTrigger.getBoundingClientRect();
         elements.mainPlayer.classList.add('expanded');
         renderQueue();
@@ -827,38 +838,62 @@ function togglePlayerExpansion() {
         elements.expandedCoverContainer.style.transition = 'none';
         elements.expandedCoverContainer.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
         
-        // Reflow
         void elements.expandedCoverContainer.offsetWidth;
         
-        elements.expandedCoverContainer.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease';
+        elements.expandedCoverContainer.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease';
         elements.expandedCoverContainer.style.transform = 'none';
         elements.expandedCoverContainer.style.opacity = '1';
         
         elements.expandTrigger.style.opacity = '0';
     } else {
-        // Calcular la posición mini real (quitando la clase momentáneamente)
-        elements.mainPlayer.classList.remove('expanded');
-        const miniRect = elements.expandTrigger.getBoundingClientRect();
-        elements.mainPlayer.classList.add('expanded');
+        // --- CIERRE SIMÉTRICO (Snap-and-Animate) ---
+        // 1. Capturar posición actual (Grande) en pantalla completa
+        const largeRectGlobal = elements.expandedCoverContainer.getBoundingClientRect();
         
-        // Forzar reflow para que la animación parta desde la posición expandida
+        // 2. Saltar layout a modo Flotante (sin transición) para medir el destino real
+        elements.mainPlayer.style.transition = 'none';
+        elements.mainPlayer.classList.remove('expanded');
         void elements.mainPlayer.offsetWidth;
         
-        const largeRect = elements.expandedCoverContainer.getBoundingClientRect();
-        const dx = (miniRect.left + miniRect.width/2) - (largeRect.left + largeRect.width/2);
-        const dy = (miniRect.top + miniRect.height/2) - (largeRect.top + largeRect.height/2);
-        const scale = miniRect.width / largeRect.width;
+        const miniRectGlobal = elements.expandTrigger.getBoundingClientRect();
+        const largeContainerRectFloating = elements.expandedCoverContainer.getBoundingClientRect();
         
-        elements.expandedCoverContainer.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease';
-        elements.expandedCoverContainer.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
-        elements.expandedCoverContainer.style.opacity = '0';
+        // 3. Aplicar el "Snap": Mover la carátula para que visualmente siga en la posición grande
+        // aunque el padre (player) ya haya saltado a su posición flotante.
+        const snapDx = (largeRectGlobal.left + largeRectGlobal.width / 2) - (largeContainerRectFloating.left + largeContainerRectFloating.width / 2);
+        const snapDy = (largeRectGlobal.top + largeRectGlobal.height / 2) - (largeContainerRectFloating.top + largeContainerRectFloating.height / 2);
+        const snapScale = largeRectGlobal.width / largeContainerRectFloating.width;
+        
+        elements.expandedCoverContainer.style.transition = 'none';
+        elements.expandedCoverContainer.style.transform = `translate(${snapDx}px, ${snapDy}px) scale(${snapScale})`;
+        void elements.expandedCoverContainer.offsetWidth;
+        
+        // 4. Preparar el destino final (el mini artwork en el reproductor flotante)
+        const targetDx = (miniRectGlobal.left + miniRectGlobal.width / 2) - (largeContainerRectFloating.left + largeContainerRectFloating.width / 2);
+        const targetDy = (miniRectGlobal.top + miniRectGlobal.height / 2) - (largeContainerRectFloating.top + largeContainerRectFloating.height / 2);
+        const targetScale = miniRectGlobal.width / largeContainerRectFloating.width;
+        
+        // 5. Activar clase de cierre (mantiene visibilidad) y lanzar animaciones
+        elements.mainPlayer.classList.add('closing');
+        elements.mainPlayer.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        elements.expandedCoverContainer.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease';
+        
+        // Animamos hacia el mini-artwork y quitamos la clase expandido para que el fondo se minimice
+        // (La clase 'closing' mantendrá la vista expandida visible durante el vuelo)
+        requestAnimationFrame(() => {
+            elements.mainPlayer.classList.remove('expanded');
+            elements.expandedCoverContainer.style.transform = `translate(${targetDx}px, ${targetDy}px) scale(${targetScale})`;
+            elements.expandedCoverContainer.style.opacity = '0';
+        });
         
         setTimeout(() => {
-            elements.mainPlayer.classList.remove('expanded');
+            // Limpieza final
+            elements.mainPlayer.classList.remove('closing');
+            elements.expandedCoverContainer.style.transition = 'none';
             elements.expandedCoverContainer.style.transform = '';
             elements.expandedCoverContainer.style.opacity = '1';
             elements.expandTrigger.style.opacity = '1';
-        }, 600);
+        }, 300);
     }
 }
 
@@ -919,7 +954,113 @@ elements.uploadForm.addEventListener('submit', async (e) => {
     await uploadSong(formData);
 });
 
-document.getElementById('logout-btn').addEventListener('click', () => {
+// --- GESTIÓN DE USUARIO ---
+const userMenu = {
+    dropdown: document.getElementById('user-dropdown'),
+    trigger: document.getElementById('user-dropdown-trigger'),
+    modalContainer: document.getElementById('modal-container'),
+    modalName: document.getElementById('modal-name'),
+    modalDelete1: document.getElementById('modal-delete-1'),
+    modalDelete2: document.getElementById('modal-delete-2'),
+    newNameInput: document.getElementById('new-name-input'),
+    deleteConfirmInput: document.getElementById('delete-confirm-input'),
+    finalDeleteBtn: document.getElementById('final-delete-btn')
+};
+
+// Toggle dropdown
+userMenu.trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    userMenu.dropdown.classList.toggle('show');
+});
+
+document.addEventListener('click', () => {
+    userMenu.dropdown.classList.remove('show');
+});
+
+// Abrir Modales
+document.getElementById('change-name-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    userMenu.newNameInput.value = appState.user.nombre;
+    showModal(userMenu.modalName);
+});
+
+document.getElementById('delete-account-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    showModal(userMenu.modalDelete1);
+});
+
+function showModal(modal) {
+    userMenu.modalContainer.style.display = 'flex';
+    document.querySelectorAll('.modal-content-user').forEach(m => m.classList.remove('active'));
+    modal.classList.add('active');
+}
+
+function closeModal() {
+    userMenu.modalContainer.style.display = 'none';
+}
+
+// Cerrar modales
+document.getElementById('cancel-name-btn').addEventListener('click', closeModal);
+document.getElementById('cancel-delete-1').addEventListener('click', closeModal);
+document.getElementById('cancel-delete-2').addEventListener('click', () => showModal(userMenu.modalDelete1));
+
+// Guardar nuevo nombre
+document.getElementById('save-name-btn').addEventListener('click', async () => {
+    const nuevoNombre = userMenu.newNameInput.value.trim();
+    if (!nuevoNombre) return;
+
+    try {
+        const response = await fetch('/api/auth/profile-name', {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ nombre: nuevoNombre })
+        });
+        
+        if (!response.ok) throw new Error('Error en la petición');
+        
+        const data = await response.json();
+        if (data.success) {
+            appState.user.nombre = nuevoNombre;
+            localStorage.setItem('user', JSON.stringify(appState.user));
+            document.getElementById('user-name').textContent = nuevoNombre;
+            closeModal();
+        }
+    } catch (err) { console.error('Error actualizando nombre:', err); }
+});
+
+// Proceso de borrado
+document.getElementById('confirm-delete-1').addEventListener('click', () => {
+    userMenu.deleteConfirmInput.value = '';
+    userMenu.finalDeleteBtn.disabled = true;
+    showModal(userMenu.modalDelete2);
+});
+
+userMenu.deleteConfirmInput.addEventListener('input', (e) => {
+    userMenu.finalDeleteBtn.disabled = e.target.value !== 'Borrar';
+});
+
+document.getElementById('final-delete-btn').addEventListener('click', async () => {
+    if (userMenu.deleteConfirmInput.value !== 'Borrar') return;
+
+    try {
+        const response = await fetch('/api/auth/profile', {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        
+        if (!response.ok) throw new Error('Error al borrar la cuenta');
+        
+        const data = await response.json();
+        if (data.success) {
+            auth.logout();
+            window.location.href = '/login';
+        }
+    } catch (err) { console.error('Error al eliminar cuenta:', err); }
+});
+
+// Logout
+document.getElementById('logout-link').addEventListener('click', (e) => {
+    e.preventDefault();
     auth.logout();
     window.location.href = '/login';
 });

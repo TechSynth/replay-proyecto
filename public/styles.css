@@ -157,23 +157,170 @@ body {
     gap: 12px;
 }
 
-.logout-btn {
+.user-menu {
+    position: relative;
+}
+
+.user-dropdown-trigger {
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 18px;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
     cursor: pointer;
+    transition: background 0.3s;
+    font-weight: bold;
+}
+
+.user-dropdown-trigger:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-dropdown-content {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 220px;
+    background-color: #282828;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    display: none;
+    flex-direction: column;
     padding: 8px;
-    border-radius: 50%;
+    z-index: 10000;
+}
+
+.user-dropdown-content.show {
+    display: flex;
+}
+
+.user-dropdown-content a {
+    padding: 12px 16px;
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+}
+
+.user-dropdown-content a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-dropdown-content a.danger {
+    color: var(--primary-color);
+}
+
+.user-dropdown-content hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 8px 0;
+}
+
+/* MODALES DE USUARIO */
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 20000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content-user {
+    background-color: #282828;
+    width: 400px;
+    padding: 32px;
+    border-radius: 12px;
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-content-user.active {
+    display: flex;
+}
+
+.modal-content-user h3 {
+    font-size: 24px;
+}
+
+.modal-content-user h3.danger-text {
+    color: white;
+}
+
+.modal-content-user input {
+    width: 100%;
+    padding: 12px;
+    background-color: #3e3e3e;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: white;
+}
+
+.modal-content-user input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.modal-actions button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
     transition: all 0.2s;
 }
 
-.logout-btn:hover {
-    color: var(--text-primary);
-    background-color: rgba(255, 255, 255, 0.1);
+.modal-btn-cancel {
+    background-color: transparent;
+    color: white;
+}
+
+/* Botón de acción positiva (Cambiar nombre) */
+.modal-btn-save {
+    background-color: var(--primary-color);
+    color: black;
+}
+
+/* Botón de acción destructiva (Borrar) - Ahora en blanco y muy discreto */
+.modal-btn-danger {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.modal-btn-danger:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* HIGHLIGHT PARA CANCELAR/VOLVER EN EL FLUJO DE BORRADO */
+#modal-delete-1 .modal-btn-cancel,
+#modal-delete-2 .modal-btn-cancel {
+    background-color: var(--primary-color);
+    color: black;
+}
+
+#modal-delete-1 .modal-btn-cancel:hover,
+#modal-delete-2 .modal-btn-cancel:hover {
+    background-color: var(--primary-color); /* Mantener el mismo verde */
+    transform: none; /* Sin escalado */
 }
 
 .content-area {
@@ -262,7 +409,7 @@ body {
     border-radius: 24px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
     z-index: 9999; /* Máxima prioridad sobre todo */
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -294,14 +441,17 @@ body {
     flex-direction: column;
 }
 
-.player.expanded .player-expanded-view {
+.player.expanded .player-expanded-view,
+.player.closing .player-expanded-view {
     visibility: visible;
     opacity: 1;
 }
 
-/* Ocultar elementos del mini player cuando está expandido */
+/* Ocultar elementos del mini player cuando está expandido o cerrándose */
 .player.expanded .player-left,
-.player.expanded .player-right {
+.player.expanded .player-right,
+.player.closing .player-left,
+.player.closing .player-right {
     opacity: 0;
     pointer-events: none;
 }
