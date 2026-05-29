@@ -55,7 +55,19 @@ const elements = {
     playlistDetailView: document.getElementById('playlist-detail-view'),
     playlistSongsList: document.getElementById('playlist-songs-list'),
     playlistName: document.getElementById('playlist-name'),
-    playlistCover: document.getElementById('playlist-cover'), progressContainer: document.getElementById('progress-container'), recentSongsGrid: document.getElementById('recent-songs-grid')
+    playlistCover: document.getElementById('playlist-cover'), 
+    progressContainer: document.getElementById('progress-container'), 
+    recentSongsGrid: document.getElementById('recent-songs-grid'),
+    // Expanded Player Elements
+    mainPlayer: document.getElementById('main-player'),
+    playerExpandedView: document.getElementById('player-expanded-view'),
+    expandTrigger: document.getElementById('expand-player-trigger'),
+    closeExpanded: document.getElementById('close-expanded-btn'),
+    queueList: document.getElementById('queue-list'),
+    expandedCoverImg: document.getElementById('expanded-cover-img'),
+    expandedTitle: document.getElementById('expanded-title'),
+    expandedArtist: document.getElementById('expanded-artist'),
+    expandedCoverContainer: document.getElementById('expanded-cover-container')
 };
 
 // api
@@ -279,10 +291,10 @@ function createSongCard(song) {
         e.dataTransfer.effectAllowed = 'copy';
     });
     
-    const imageUrl = song.imagen_url || '';
+    const imageUrl = song.imagen_url || 'img/imagenPlaylist.png';
     
     card.innerHTML = '<div class="song-card-image">' + 
-        (imageUrl ? '<img src="' + imageUrl + '" alt="' + song.titulo + '">' : '<i class="fas fa-music"></i>') + 
+        '<img src="' + imageUrl + '" alt="' + song.titulo + '">' + 
         '</div>' +
         '<div class="song-card-title">' + song.titulo + '</div>' +
         '<div class="song-card-artist">' + (song.artista_nombre || 'Artista desconocido') + '</div>';
@@ -308,7 +320,8 @@ function createListItem(song, index) {
         year: 'numeric'
     });
 
-    item.innerHTML = '<div class="col-cover"><div class="item-cover">' + (song.imagen_url ? '<img src="' + song.imagen_url + '" alt="' + song.titulo + '">' : '<i class="fas fa-music"></i>') + '</div></div><div class="item-info"><span class="item-title">' + song.titulo + '</span><span class="item-artist">' + (song.artista_nombre || 'Artista desconocido') + '</span></div><div class="item-album">' + (song.album_nombre || 'Sin álbum') + '</div><div class="col-date">' + date + '</div>';
+    const imageUrl = song.imagen_url || 'img/imagenPlaylist.png';
+    item.innerHTML = '<div class="col-cover"><div class="item-cover">' + '<img src="' + imageUrl + '" alt="' + song.titulo + '">' + '</div></div><div class="item-info"><span class="item-title">' + song.titulo + '</span><span class="item-artist">' + (song.artista_nombre || 'Artista desconocido') + '</span></div><div class="item-album">' + (song.album_nombre || 'Sin álbum') + '</div><div class="col-date">' + date + '</div>';
 
     return item;
 }
@@ -326,33 +339,76 @@ function renderSearchResults(results) {
 // reproductor audio
 const audioPlayer = new Audio();
 
-function playSong(song) {
+function updateArtworkDOM(song) {
+    const imageUrl = song.imagen_url || 'img/imagenPlaylist.png';
+    elements.songImage.innerHTML = '<img src="' + imageUrl + '" alt="cover">';
+    elements.expandedCoverImg.src = imageUrl;
+    elements.expandedTitle.textContent = song.titulo;
+    elements.expandedArtist.textContent = song.artista_nombre || 'Artista desconocido';
+}
+
+function animateArtworkChange(newSong, direction) {
+    const container = elements.expandedCoverContainer;
+    const oldContent = container.querySelector('img');
+    
+    if (oldContent && elements.mainPlayer.classList.contains('expanded')) {
+        const clone = oldContent.cloneNode(true);
+        clone.classList.add('clone-artwork');
+        container.appendChild(clone);
+        
+        updateArtworkDOM(newSong);
+        const newContent = container.querySelector('img:not(.clone-artwork)');
+        
+        const inClass = direction === 'next' ? 'slide-in-right' : 'slide-in-left';
+        const outClass = direction === 'next' ? 'slide-out-left' : 'slide-out-right';
+        
+        newContent.classList.add(inClass);
+        clone.classList.add(outClass);
+        
+        setTimeout(() => {
+            newContent.classList.remove(inClass);
+            if (clone.parentNode) container.removeChild(clone);
+        }, 600);
+    } else {
+        updateArtworkDOM(newSong);
+    }
+}
+
+function playSong(song, direction = null) {
     if (appState.currentSong?.id === song.id) {
         togglePlay();
         return;
     }
+    
+    if (direction) {
+        animateArtworkChange(song, direction);
+    } else {
+        updateArtworkDOM(song);
+    }
+    
     appState.currentSong = song;
     appState.isPlaying = true;
     saveRecentSong(song);
+    
     audioPlayer.src = '/api/music/stream/' + song.id;
     audioPlayer.volume = appState.volume;
     audioPlayer.play().catch(err => console.error('error al reproducir:', err));
+    
     elements.currentSongTitle.textContent = song.titulo;
-    elements.currentSongArtist.textContent = song.artista_nombre || 'artista desconocido';
-    if (song.imagen_url) {
-        elements.songImage.innerHTML = '<img src="' + song.imagen_url + '" alt="cover">';
-        elements.songImage.style.backgroundColor = 'transparent';
-    } else {
-        elements.songImage.innerHTML = '';
-        elements.songImage.style.backgroundColor = '#000';
-    }
+    elements.currentSongArtist.textContent = song.artista_nombre || 'Artista desconocido';
+    
     document.querySelector('#play-btn i').className = 'fas fa-pause';
+    
     audioPlayer.ontimeupdate = () => {
         appState.currentTime = audioPlayer.currentTime;
         appState.duration = audioPlayer.duration || song.duracion || 0;
         updateProgress();
     };
     audioPlayer.onended = () => nextSong();
+    
+    if (elements.mainPlayer.classList.contains('expanded')) {
+        renderQueue();
+    }
 }
 
 function saveRecentSong(song) {
@@ -410,7 +466,7 @@ function nextSong() {
     if (!appState.currentSong || list.length === 0) return;
     const currentIndex = list.findIndex(s => s.id === appState.currentSong.id);
     const nextIndex = (currentIndex + 1) % list.length;
-    playSong(list[nextIndex]);
+    playSong(list[nextIndex], 'next');
 }
 
 function prevSong() {
@@ -418,7 +474,7 @@ function prevSong() {
     if (!appState.currentSong || list.length === 0) return;
     const currentIndex = list.findIndex(s => s.id === appState.currentSong.id);
     const prevIndex = (currentIndex - 1 + list.length) % list.length;
-    playSong(list[prevIndex]);
+    playSong(list[prevIndex], 'prev');
 }
 
 function formatTime(seconds) {
@@ -431,6 +487,9 @@ function formatTime(seconds) {
 // navegacion
 
 function switchView(viewName) {
+    if (elements.mainPlayer.classList.contains('expanded')) {
+        togglePlayerExpansion();
+    }
     elements.homeView.style.display = 'none';
     elements.searchView.style.display = 'none';
     elements.libraryView.style.display = 'none';
@@ -751,7 +810,80 @@ async function updatePlaylistImage(id, file) {
     }
 }
 
+// Transitions
+function togglePlayerExpansion() {
+    const isExpanding = !elements.mainPlayer.classList.contains('expanded');
+    
+    if (isExpanding) {
+        const miniRect = elements.expandTrigger.getBoundingClientRect();
+        elements.mainPlayer.classList.add('expanded');
+        renderQueue();
+        
+        const largeRect = elements.expandedCoverContainer.getBoundingClientRect();
+        const dx = (miniRect.left + miniRect.width/2) - (largeRect.left + largeRect.width/2);
+        const dy = (miniRect.top + miniRect.height/2) - (largeRect.top + largeRect.height/2);
+        const scale = miniRect.width / largeRect.width;
+        
+        elements.expandedCoverContainer.style.transition = 'none';
+        elements.expandedCoverContainer.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        
+        // Reflow
+        void elements.expandedCoverContainer.offsetWidth;
+        
+        elements.expandedCoverContainer.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease';
+        elements.expandedCoverContainer.style.transform = 'none';
+        elements.expandedCoverContainer.style.opacity = '1';
+        
+        elements.expandTrigger.style.opacity = '0';
+    } else {
+        // Calcular la posición mini real (quitando la clase momentáneamente)
+        elements.mainPlayer.classList.remove('expanded');
+        const miniRect = elements.expandTrigger.getBoundingClientRect();
+        elements.mainPlayer.classList.add('expanded');
+        
+        // Forzar reflow para que la animación parta desde la posición expandida
+        void elements.mainPlayer.offsetWidth;
+        
+        const largeRect = elements.expandedCoverContainer.getBoundingClientRect();
+        const dx = (miniRect.left + miniRect.width/2) - (largeRect.left + largeRect.width/2);
+        const dy = (miniRect.top + miniRect.height/2) - (largeRect.top + largeRect.height/2);
+        const scale = miniRect.width / largeRect.width;
+        
+        elements.expandedCoverContainer.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease';
+        elements.expandedCoverContainer.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        elements.expandedCoverContainer.style.opacity = '0';
+        
+        setTimeout(() => {
+            elements.mainPlayer.classList.remove('expanded');
+            elements.expandedCoverContainer.style.transform = '';
+            elements.expandedCoverContainer.style.opacity = '1';
+            elements.expandTrigger.style.opacity = '1';
+        }, 600);
+    }
+}
+
+function renderQueue() {
+    elements.queueList.innerHTML = '';
+    if (!appState.currentSong) return;
+    
+    const currentIndex = appState.songs.findIndex(s => s.id === appState.currentSong.id);
+    const nextSongs = appState.songs.slice(currentIndex + 1);
+    
+    if (nextSongs.length === 0) {
+        elements.queueList.innerHTML = '<p style="color: #666; padding: 20px;">No hay más canciones en cola</p>';
+        return;
+    }
+    
+    nextSongs.forEach(song => {
+        const item = createListItem(song, '');
+        elements.queueList.appendChild(item);
+    });
+}
+
 // listeners
+elements.expandTrigger.addEventListener('click', togglePlayerExpansion);
+elements.closeExpanded.addEventListener('click', togglePlayerExpansion);
+
 elements.progressContainer.addEventListener('click', (e) => {
     const width = elements.progressContainer.clientWidth;
     const clickX = e.offsetX;

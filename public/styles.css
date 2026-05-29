@@ -245,18 +245,230 @@ body {
     margin-top: 8px;
 }
 
+/* REPRODUCTOR FLOTANTE Y NEUMORFISTA */
 .player {
     height: var(--player-height);
-    background-color: var(--background-light);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #1a1a1a !important; /* Fondo sólido oscuro */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
+    padding: 0 32px;
     position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 48px);
+    max-width: 1400px;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    z-index: 9999; /* Máxima prioridad sobre todo */
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player.expanded {
     bottom: 0;
     left: 0;
+    width: 100vw;
+    height: 100vh;
+    transform: none;
+    max-width: none;
+    border-radius: 0;
+    padding: 0;
+    background: linear-gradient(180deg, #1e3a5f 0%, #121212 100%);
+}
+
+.player-expanded-view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: 500;
+    padding: 60px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.player.expanded .player-expanded-view {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Ocultar elementos del mini player cuando está expandido */
+.player.expanded .player-left,
+.player.expanded .player-right {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.player.expanded .player-center {
+    position: fixed;
+    bottom: 40px;
+    left: 0;
     right: 0;
+    width: 100%;
+    max-width: none;
+    padding: 0 60px;
+    z-index: 1001;
+}
+
+.expanded-content {
+    display: flex;
+    gap: 80px;
+    align-items: center;
+    justify-content: center;
+    height: calc(100% - 140px);
+}
+
+.expanded-left {
+    flex: 1;
+    max-width: 400px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.expanded-left h3 {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.queue-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.expanded-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.large-cover {
+    width: 100%;
+    max-width: 380px; /* Reducido de 500px */
+    aspect-ratio: 1;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+    margin-bottom: 30px;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.large-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expanded-info h2 {
+    font-size: 32px; /* Reducido de 48px */
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.expanded-info h3 {
+    font-size: 18px; /* Reducido de 24px */
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.close-expanded {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s;
+    z-index: 1002;
+}
+
+.close-expanded:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* BOTÓN PLAY MÁS PEQUEÑO Y ESTILIZADO */
+.player-controls .play-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    padding: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.player-controls .play-btn:hover {
+    transform: scale(1.1);
+}
+
+/* TRANSICIONES ENTRE CANCIONES */
+.slide-out-left {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.slide-out-right {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.slide-in-right {
+    animation: slideInRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.clone-artwork {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
 }
 
 .player-left {
@@ -373,6 +585,7 @@ body {
 .volume-slider {
     width: 100px;
     cursor: pointer;
+    accent-color: var(--primary-color);
 }
 
 @media (max-width: 768px) {
