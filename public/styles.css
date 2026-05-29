@@ -1896,4 +1896,37 @@ body {
         padding: 18px 0;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
+
+    /* ajustes para vista de detalle de playlist en móvil */
+    .playlist-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding-top: 20px;
+        gap: 16px;
+    }
+
+    .playlist-image-container {
+        width: 200px;
+        height: 200px;
+        margin-bottom: 8px;
+    }
+
+    .playlist-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .editable-title {
+        font-size: 36px;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    .playlist-actions {
+        justify-content: center;
+        margin-top: 16px;
+    }
 }
