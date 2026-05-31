@@ -1,68 +1,103 @@
-# rePLAY
+# rePLAY 🎧
+### *Cloud-Native Music Streaming Platform*
 
-**Live:** [https://replays.studio](https://replays.studio)
+rePLAY is a single Page Application personal music management. Developed as a Final Degree Project (TFG) for the C.F.G.S in Web Application Development (DAW II), it demonstrates the seamless integration of modern web technologies with professional-grade AWS cloud infrastructure.
 
-Este es mi Proyecto Final de Grado (TFG) para el ciclo de Desarrollo de Aplicaciones Web (DAW II). Básicamente, quería hacerme un clon de Spotify que funcionara de verdad, pero controlando yo dónde y cómo se guardan los archivos.
+**Live Project:** [https://replays.studio](https://replays.studio)
 
-Me harté rápido de la idea de guardar MP3 en una base de datos local (peta el servidor en minutos), así que terminé montando una infraestructura completa en Amazon Web Services.
+---
 
-## Qué hace
+## 🏗 System Architecture
+rePLAY utilizes a **decoupled, three-tier architecture** to ensure maximum performance and scalability:
 
-- **La música suena desde S3**: Los archivos de audio y las carátulas no tocan mi servidor de Node. Van directos a un bucket de Amazon S3, y la web hace streaming desde ahí.
-- **Lee los metadatos**: Si subes un MP3, el servidor usa `music-metadata` para sacar el título y el artista automáticamente. Me ahorró tener que hacer un formulario gigante.
-- **Diseño sin recargas**: Es una Single Page Application (SPA) hecha con Vanilla JS. Si cambias de pestaña, la música sigue sonando.
-- **Modo móvil real**: Me tiré semanas peleando con CSS para que en el móvil no se viera como una web de escritorio encogida. Tiene su propia barra inferior y los controles cambian.
-- **Login con Google**: Implementé OAuth 2.0 porque a nadie le gusta crear cuentas nuevas hoy en día.
+1.  **Presentation Layer (Frontend)**: A responsive SPA built with Vanilla JavaScript (ES6+), optimized for seamless transitions and real-time DOM manipulation.
+2.  **Logic Layer (Backend API)**: A robust Node.js and Express.js server managing business logic, secure authentication, and cloud orchestration.
+3.  **Data & Storage Layer**:
+    *   **Metadata**: Managed via **Amazon RDS (MySQL)** for structured data integrity.
+    *   **Media Assets**: High-fidelity audio and imagery are served directly via **Amazon S3**, offloading heavy traffic from the main server.
 
-## El Stack
+---
 
-No quise usar React ni frameworks de frontend pesados porque quería demostrar que entiendo cómo funciona el DOM por debajo.
+## ✨ Key Features
 
-- **Frontend**: HTML5, CSS (bastante Grid y Flexbox) y JavaScript puro.
-- **Backend**: Node.js con Express.
-- **Base de Datos**: MySQL corriendo en Amazon RDS.
-- **Infraestructura**: Amazon EC2 (Ubuntu), Amazon S3, y Nginx haciendo de proxy inverso para gestionar el certificado SSL (Let's Encrypt).
+### 🎵 Premium Playback Experience
+*   **Hero Transitions**: Symmetrical shared-element animations for a fluid mobile experience.
+*   **Neomorphic Design**: A modern "Dark Mode" aesthetic using shadows and highlights for a tactile feel.
+*   **Real-time Progress**: Highly accurate synchronization between the audio engine and visual indicators.
 
-## Estructura de carpetas
+### 📁 Smart Media Management
+*   **Automated Metadata Extraction**: Automatic parsing of ID3 tags (Title, Artist, Album Art) during MP3 uploads.
+*   **Cloud-First Storage**: Direct integration with AWS S3 for ultra-fast media streaming.
+*   **Intuitive Playlists**: Drag & Drop organization on desktop and Bottom-Sheet menus on mobile.
 
-Bastante estándar, separando el cliente del servidor:
+### 🛡 Security & User Control
+*   **OAuth 2.0 Integration**: Secure login with **Google Authentication**.
+*   **JWT Sessions**: Stateless authentication for improved performance and security.
+*   **Atomic Deletion**: Secure account removal with automatic cleanup of all associated S3 files and RDS records.
 
-```
-replay-proyecto/
-├── src/
-│   ├── config/        # Conexión a la BBDD
-│   ├── controllers/   # Donde pasa la magia (Auth y Música)
-│   ├── routes/        # Los endpoints
-│   └── middlewares/   # Comprobación del token JWT
-├── public/            # Todo lo que ve el usuario
-│   ├── app.js         # El reproductor y la lógica visual
-│   ├── auth.js        # El login
-│   └── styles.css     # +1500 líneas de CSS
-├── database.sql       # Tablas
-└── server.js          # Punto de entrada
-```
+---
 
-## Para probarlo en local
+## 🛠 Tech Stack
 
-Necesitas tener Node y MySQL instalados, y una cuenta de AWS activa.
+| Component | Technology | Role |
+| :--- | :--- | :--- |
+| **Language** | JavaScript (ES6+) | Unified full-stack development |
+| **Frontend** | HTML5, CSS3 (Grid/Flex) | Responsive & Interactive UI |
+| **Backend** | Node.js / Express | API REST & Business Logic |
+| **Database** | MySQL (Amazon RDS) | Persistent Data Storage |
+| **Cloud** | Amazon S3 | Binary Object Storage (Audio/Images) |
+| **Server** | Amazon EC2 (Ubuntu 24.04) | Production Hosting |
+| **Proxy** | Nginx | Reverse Proxy & SSL termination |
 
-1. Clonas esto.
-2. Haces `npm install`.
-3. Metes la base de datos `database.sql` en tu MySQL.
-4. Creas un `.env` basado en este formato (necesitarás tus propias keys de AWS):
-   ```
-   PORT=3000
-   DB_HOST=localhost
-   DB_USER=root
-   DB_PASS=tu_password
-   DB_NAME=replay_db
-   AWS_ACCESS_KEY_ID=xxx
-   AWS_SECRET_ACCESS_KEY=xxx
-   AWS_REGION=us-east-1
-   S3_BUCKET_NAME=tu-bucket
-   JWT_SECRET=secreto
-   GOOGLE_CLIENT_ID=xxx
-   ```
-5. `node server.js`
+---
 
-El proyecto me ha servido para aprender que configurar un proxy inverso en Nginx duele más que escribir mil líneas de JavaScript, pero el resultado compensa.
+## 🚀 Getting Started
+
+### Prerequisites
+*   Node.js (v20 or higher)
+*   MySQL 8.0
+*   AWS Account (S3, RDS, EC2)
+
+### Installation
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/TechSynth/replay-proyecto.git
+    cd replay-proyecto
+    ```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+3.  **Configure environment:**
+    Create a `.env` file in the root directory:
+    ```env
+    PORT=3000
+    DB_HOST=your-rds-endpoint.aws.com
+    DB_USER=admin
+    DB_PASS=your-password
+    DB_NAME=replay_db
+    AWS_ACCESS_KEY_ID=your-key
+    AWS_SECRET_ACCESS_KEY=your-secret
+    AWS_REGION=us-east-1
+    S3_BUCKET_NAME=replay-music-tfg
+    JWT_SECRET=your-secure-secret
+    GOOGLE_CLIENT_ID=your-google-id
+    ```
+4.  **Initialize Database:**
+    ```bash
+    mysql -u root -p < database.sql
+    ```
+5.  **Start Production Server:**
+    ```bash
+    pm2 start server.js --name "rePLAY"
+    ```
+
+---
+
+## 🎓 Academic Information
+This project represents the cumulative work for the **C.F.G.S Development of Web Applications (DAW II)**.
+
+*   **Focus Areas:** Cloud Computing (AWS), RESTful API Design, Responsive UX/UI.
+
+---
+*Developed with ❤️💧🩸 in 2026.*
