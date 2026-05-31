@@ -118,9 +118,25 @@ body {
     z-index: 10;
 }
 
+.desktop-only {
+    display: block;
+}
+
 .search-bar {
     display: flex;
+    align-items: center;
     gap: 8px;
+    border-radius: 20px;
+}
+
+.search-icon {
+    font-size: 20px;
+    color: var(--text-secondary);
+}
+
+.user-avatar-icon {
+    font-size: 24px;
+    color: var(--text-secondary);
 }
 
 .search-bar input {
@@ -1928,5 +1944,69 @@ body {
     .playlist-actions {
         justify-content: center;
         margin-top: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+
+    .top-bar {
+        padding: 16px 20px;
+        background-color: transparent;
+        border-bottom: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .search-bar {
+        flex: 1;
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 8px 16px;
+        border-radius: 500px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: auto;
+    }
+
+    .search-icon {
+        color: var(--text-secondary);
+        font-size: 16px;
+        display: block !important;
+    }
+
+    .search-bar input {
+        width: 100%;
+        background-color: transparent;
+        padding: 0;
+        font-size: 15px;
+    }
+
+    .user-dropdown-trigger {
+        background: none !important;
+        padding: 0 !important;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .user-avatar-icon {
+        font-size: 28px;
+        color: white;
+    }
+
+    #user-name {
+        display: none;
+    }
+
+    /* adjust the user dropdown positioning on mobile if necessary */
+    .user-dropdown-content {
+        top: calc(100% + 12px);
     }
 }

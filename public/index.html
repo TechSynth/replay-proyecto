@@ -63,13 +63,15 @@
         <main class="main-content">
             <header class="top-bar">
                 <div class="search-bar">
+                    <i class="fas fa-search search-icon mobile-only"></i>
                     <input type="text" id="search-input" placeholder="¿Qué quieres escuchar?">
-                    <button id="search-btn">Buscar</button>
+                    <button id="search-btn" class="desktop-only">Buscar</button>
                 </div>
                 <div class="user-menu" id="user-menu-container">
                     <div class="user-dropdown-trigger" id="user-dropdown-trigger">
+                        <i class="fas fa-user-circle mobile-only user-avatar-icon"></i>
                         <span id="user-name">Usuario Demo</span>
-                        <i class="fas fa-chevron-down"></i>
+                        <i class="fas fa-chevron-down desktop-only"></i>
                     </div>
                     
                     <div class="user-dropdown-content" id="user-dropdown">
