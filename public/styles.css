@@ -566,7 +566,7 @@ body {
     opacity: 1 !important;
     pointer-events: auto !important;
     position: fixed;
-    bottom: 50px; /* misma altura que los controles centrales */
+    bottom: 40px; /* alineado con los controles centrales */
     right: 60px;
     z-index: 1500;
     flex: none;
