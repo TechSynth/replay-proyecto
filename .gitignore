@@ -4,6 +4,7 @@ diagrama-clases.png
 .env
 documentacion_tfg.md
 node_modules
+.secrets/
 
 public/music/
 claveReplayProyecto.pem
