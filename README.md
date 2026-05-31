@@ -1,62 +1,68 @@
-# rePLAY - Music Streaming Platform
+# rePLAY
 
-A collaborative full-stack music streaming application developed as a final degree project for C.F.G.S DAW II (Higher Education Web Application Development). Built with Node.js, Express, and MySQL, demonstrating modern web development practices including RESTful API design and relational database modeling.
+**Live:** [https://replays.studio](https://replays.studio)
 
-## Tech Stack
+Este es mi Proyecto Final de Grado (TFG) para el ciclo de Desarrollo de Aplicaciones Web (DAW II). Básicamente, quería hacerme un clon de Spotify que funcionara de verdad, pero controlando yo dónde y cómo se guardan los archivos.
 
-- Backend: Node.js, Express.js
-- Database: MySQL 8.0
-- Frontend: HTML5, CSS3, Vanilla JavaScript
-- Icons: Font Awesome
-- Planned: AWS S3, AWS EC2, JWT Authentication
+Me harté rápido de la idea de guardar MP3 en una base de datos local (peta el servidor en minutos), así que terminé montando una infraestructura completa en Amazon Web Services.
 
-## Installation
-```bash
-npm install
-mysql -u root -p < database.sql
-node server.js
-```
+## Qué hace
 
-Configure database credentials in `server.js` before running.
+- **La música suena desde S3**: Los archivos de audio y las carátulas no tocan mi servidor de Node. Van directos a un bucket de Amazon S3, y la web hace streaming desde ahí.
+- **Lee los metadatos**: Si subes un MP3, el servidor usa `music-metadata` para sacar el título y el artista automáticamente. Me ahorró tener que hacer un formulario gigante.
+- **Diseño sin recargas**: Es una Single Page Application (SPA) hecha con Vanilla JS. Si cambias de pestaña, la música sigue sonando.
+- **Modo móvil real**: Me tiré semanas peleando con CSS para que en el móvil no se viera como una web de escritorio encogida. Tiene su propia barra inferior y los controles cambian.
+- **Login con Google**: Implementé OAuth 2.0 porque a nadie le gusta crear cuentas nuevas hoy en día.
 
-Access at `http://localhost:3000`
+## El Stack
 
-## Features
+No quise usar React ni frameworks de frontend pesados porque quería demostrar que entiendo cómo funciona el DOM por debajo.
 
-- RESTful API with 7 endpoints
-- Real-time search functionality
-- Playlist management
-- Responsive design
-- MVC architecture
+- **Frontend**: HTML5, CSS (bastante Grid y Flexbox) y JavaScript puro.
+- **Backend**: Node.js con Express.
+- **Base de Datos**: MySQL corriendo en Amazon RDS.
+- **Infraestructura**: Amazon EC2 (Ubuntu), Amazon S3, y Nginx haciendo de proxy inverso para gestionar el certificado SSL (Let's Encrypt).
 
-## API Endpoints
-```
-GET    /api/canciones
-GET    /api/canciones/:id
-GET    /api/artistas
-GET    /api/usuarios/:userId/playlists
-POST   /api/playlists
-POST   /api/playlists/:id/canciones
-GET    /api/search?q={query}
-```
+## Estructura de carpetas
 
-## Project Structure
+Bastante estándar, separando el cliente del servidor:
+
 ```
 replay-proyecto/
-├── server.js          # Express server
-├── database.sql       # Database schema
-└── public/
-    ├── index.html
-    ├── styles.css
-    └── app.js
+├── src/
+│   ├── config/        # Conexión a la BBDD
+│   ├── controllers/   # Donde pasa la magia (Auth y Música)
+│   ├── routes/        # Los endpoints
+│   └── middlewares/   # Comprobación del token JWT
+├── public/            # Todo lo que ve el usuario
+│   ├── app.js         # El reproductor y la lógica visual
+│   ├── auth.js        # El login
+│   └── styles.css     # +1500 líneas de CSS
+├── database.sql       # Tablas
+└── server.js          # Punto de entrada
 ```
 
-## Development Status
+## Para probarlo en local
 
-Current: Basic functionality complete
-Next: AWS S3 integration, JWT authentication, real audio playback
+Necesitas tener Node y MySQL instalados, y una cuenta de AWS activa.
 
-## Team
+1. Clonas esto.
+2. Haces `npm install`.
+3. Metes la base de datos `database.sql` en tu MySQL.
+4. Creas un `.env` basado en este formato (necesitarás tus propias keys de AWS):
+   ```
+   PORT=3000
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASS=tu_password
+   DB_NAME=replay_db
+   AWS_ACCESS_KEY_ID=xxx
+   AWS_SECRET_ACCESS_KEY=xxx
+   AWS_REGION=us-east-1
+   S3_BUCKET_NAME=tu-bucket
+   JWT_SECRET=secreto
+   GOOGLE_CLIENT_ID=xxx
+   ```
+5. `node server.js`
 
-Collaborative project for
-C.F.G.S DAW II - Web Application Development
+El proyecto me ha servido para aprender que configurar un proxy inverso en Nginx duele más que escribir mil líneas de JavaScript, pero el resultado compensa.

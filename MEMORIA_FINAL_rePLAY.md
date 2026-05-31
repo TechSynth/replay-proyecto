@@ -1,67 +1,76 @@
 # Memoria Técnica: Proyecto rePLAY
 
+**Autor:** Ayman Lemrabet
 **Ciclo:** C.F.G.S Desarrollo de Aplicaciones Web (DAW II)
+**Institución:** I.E.S. Pío Baroja
 **Fecha:** Mayo 2026
 
 ---
 
-## 1. Explicación del proyecto
+## 1. De qué va el proyecto
 
-rePLAY es una plataforma de música en streaming. La idea era montar una aplicación tipo Single Page Application donde los usuarios pudieran escuchar música, subir sus propios archivos y organizarlos en listas de reproducción. 
+rePLAY es una plataforma para escuchar música en streaming por internet. Empezó como la típica idea de hacer un reproductor web, pero se me fue yendo de las manos hasta acabar montando algo mucho más parecido a Spotify, donde no solo escuchas, sino que tienes tu propia cuenta, tus listas, y tú mismo puedes subir los MP3.
 
-Hay alternativas evidentes como Spotify o Apple Music, pero quería ver si era capaz de montar una infraestructura similar desde cero. La diferencia principal de mi enfoque es cómo manejo los archivos. No guardo los MP3 ni las imágenes en la base de datos local porque saturaría el servidor en seguida. En su lugar, uso un servidor de Node.js solo para la lógica y dejo que Amazon S3 se encargue del almacenamiento pesado de la música.
+Al principio pensé en meter las canciones en la carpeta del proyecto o en la base de datos directamente. Menos mal que no lo hice. A la que subí tres canciones de prueba, me di cuenta de que el servidor se iba a ahogar. Así que replanteé la arquitectura entera: Node.js solo se encargaría de la lógica (usuarios, contraseñas, URLs), y los archivos pesados vivirían en Amazon S3. 
 
-**Tecnologías y equipos**
-Para hacer esto funcionar, he necesitado salir del entorno de desarrollo local y montar infraestructura real en la nube:
-*   **Frontend:** HTML, CSS y JavaScript a pelo (Vanilla JS), sin frameworks pesados, para controlar exactamente cómo interactúa el reproductor con el DOM.
-*   **Backend:** Node.js con Express para montar una API REST.
-*   **Base de datos:** MySQL. Todo corre en una instancia de Amazon RDS.
-*   **Almacenamiento:** Amazon S3 para los MP3 y carátulas.
-*   **Servidor web:** Una máquina virtual EC2 con Ubuntu en AWS, usando Nginx como proxy inverso para que la aplicación responda por el puerto 80 y 443 con certificado SSL.
+Lo más importante para mí era la experiencia de uso. Me pone enfermo cuando cambias de página en una web y la música se corta. Para evitarlo, construí todo como una Single Page Application (SPA). Solo hay un archivo `index.html`. Cuando haces clic en algo, JavaScript esconde una capa y enseña otra, pidiendo los datos al servidor en segundo plano usando `fetch`.
 
-**Modelo de datos**
-El esquema relacional gira en torno a los usuarios y sus canciones. Tengo una tabla principal de `usuarios` conectada a `canciones` (para saber quién subió qué). Las `playlists` pertenecen a un usuario, y la tabla `playlist_cancion` me sirve de puente para guardar el orden específico de las pistas dentro de cada lista. También hay tablas para artistas y álbumes preparadas para futuras ampliaciones de la biblioteca.
+## 2. Herramientas y tecnologías que he usado
 
-## 2. Usuarios
+No he querido usar frameworks como React. Siento que a veces esconden demasiado cómo funcionan las cosas por debajo, y para el TFG quería demostrar que me sé manejar con el DOM a pelo.
 
-El sistema está pensado para un tipo de usuario estándar. Cuando te registras, puedes:
-*   Subir canciones a la plataforma (le puse un límite temporal de 3 canciones por usuario para no saturar mi bucket de S3 durante las pruebas).
-*   Crear listas de reproducción.
-*   Añadir canciones a esas listas mediante un menú contextual o arrastrando y soltando en la interfaz de escritorio.
-*   Modificar el nombre de perfil o eliminar la cuenta.
+*   **Para el Backend:** Node.js con Express. 
+*   **Para el Frontend:** JavaScript (Vanilla), HTML y mucho CSS. Todo el diseño neumorfista (el rollo este oscuro con sombras que parece que los botones sobresalen) lo he hecho a mano, peleándome bastante con las variables CSS.
+*   **Base de Datos:** MySQL.
+*   **Los servidores (AWS):** 
+    *   Una máquina EC2 con Ubuntu para correr mi código.
+    *   Una base de datos gestionada en Amazon RDS.
+    *   Amazon S3 para guardar los audios y las carátulas.
 
-Si un usuario decide borrar su cuenta, el backend se encarga de borrar también sus registros de canciones en la base de datos para no dejar datos huérfanos.
+Además, he usado cosillas como `music-metadata` en el backend para no tener que picar a mano los títulos de las canciones. Subes el archivo y la librería saca la info del propio MP3. Para las contraseñas uso `bcryptjs`, y para mantener la sesión abierta sin usar cookies anticuadas, utilizo `jsonwebtoken`.
 
-## 3. Planificación de tareas
+### Cómo está organizado el código
 
-No incluyo el diagrama de Gantt visual aquí, pero el desarrollo lo dividí en cuatro bloques principales a lo largo de los últimos meses:
-1.  **Diseño de datos y API:** Empecé definiendo qué datos iba a necesitar y montando los endpoints básicos en Express con datos de prueba estáticos.
-2.  **Lógica del reproductor:** Me costó bastante sincronizar el objeto `Audio` de JavaScript con la barra de progreso visual de la interfaz. 
-3.  **Integración Cloud:** Esta fue la fase de cambiar los archivos locales por el SDK de AWS para subir todo a S3 y conectar la base de datos a RDS.
-4.  **Diseño responsivo:** Las últimas semanas las dediqué a ajustar CSS. Tuve que cambiar la forma en la que funcionaba el reproductor para que en el móvil no fuera un desastre, implementando una barra inferior específica y un menú desplegable para las playlists.
+Lo he separado en dos bloques lógicos:
+*   La carpeta `public` es todo lo que el navegador se descarga. Ahí está mi HTML, mi archivo de estilos (`styles.css`, que acabó teniendo más de 1800 líneas) y el `app.js`, que es el que gestiona el reproductor de audio de HTML5 y los clics.
+*   La carpeta `src` es mi backend privado. Ahí tengo los controladores (`musicController.js`, `authController.js`), que son los que deciden qué pasa cuando alguien pide hacer login o subir un archivo.
 
-## 4. Explicación de cómo he realizado el proyecto
+## 3. Navegación por la plataforma
 
-El proyecto funciona separando completamente la vista de los datos. El servidor de Node.js no escupe HTML; solo devuelve JSON. 
+Cuando entras, la aplicación te pide hacer login. Tienes la opción clásica de correo y contraseña, o el botón de Google (que me dio guerra hasta que descubrí que Google no te deja usarlo si no tienes un dominio seguro con HTTPS).
 
-El frontend tiene un archivo `app.js` que hace peticiones `fetch` a la API. Cuando pido la lista de canciones, Node hace una query a MySQL (usando el paquete `mysql2/promise`), formatea los resultados y se los devuelve al cliente. Luego, JavaScript lee ese JSON y crea dinámicamente los elementos en el DOM con `document.createElement`.
+Una vez dentro, el menú cambia dependiendo de si estás en el móvil o en el ordenador:
+*   **En ordenador:** Tienes una barra lateral a la izquierda con tus playlists y las opciones de navegar. El reproductor es una barra ancha abajo del todo.
+*   **En móvil:** Esa barra lateral desaparece. En su lugar, monté un menú inferior solo con iconos, mucho más natural para el dedo. El reproductor pasa a ser una pastilla flotante. 
 
-**Conexión a la base de datos**
-Uso un pool de conexiones para no abrir y cerrar la base de datos en cada petición. Las credenciales las tengo aisladas en un archivo `.env` para que no se suban a GitHub.
+Al darle a una canción, el reproductor de abajo muestra la foto pequeña. Si tocas esa foto, se abre el "Slide-up". Es un panel gigante que ocupa toda la pantalla con la carátula en grande y controles para pasar de canción. En el ordenador aquí también metí el control de volumen, pero en móvil lo quité porque la gente ya usa los botones de su teléfono para eso.
 
-**Control de sesiones y seguridad**
-No uso cookies de sesión tradicionales. Implementé JWT (JSON Web Tokens). Cuando haces login, Node comprueba la contraseña (encriptada con bcrypt) y te devuelve un token. El frontend guarda ese token en `localStorage` y lo adjunta en los headers de cada petición privada. 
-Además, he configurado Nginx en el servidor de producción para forzar el uso de HTTPS, usando un certificado gratuito de Let's Encrypt.
+## 4. Usuarios y Base de Datos
 
-## 5. Problemas encontrados y soluciones
+En la base de datos (que diseñé usando MySQL) decidí guardar las urls que me devuelve Amazon S3, no los archivos físicos. 
 
-El despliegue en AWS fue lo que más problemas me dio. 
-Al principio, intenté arrancar la aplicación de Node directamente en el puerto 80 para no tener que escribir `:3000` en la URL. Esto me generó conflictos de permisos y bloqueaba Nginx cuando intentaba instalar el certificado SSL. 
-Lo solucioné configurando Nginx como proxy inverso. Ahora Nginx escucha en el puerto 80/443, maneja los certificados y redirige el tráfico internamente al puerto 3000 donde corre Node a través de PM2.
+El modelo de datos junta la tabla de `usuarios` con la de `canciones` (sabiendo quién sube qué). Las playlists funcionan con una tabla intermedia llamada `playlist_cancion` porque una misma canción puede estar en muchas listas, y una lista tiene muchas canciones. Además, esa tabla guarda una columna `orden` para que las listas no se mezclen.
 
-Otro problema fue la interfaz en móviles. El diseño de escritorio usa una barra lateral izquierda que era inmanejable en pantallas pequeñas. La solución fue escribir media queries que ocultan esa barra y la transforman en un "bottom sheet" (un menú que sube desde abajo) exclusivamente para la versión móvil, simplificando los controles del reproductor a solo play/pausa para ahorrar espacio.
+**El borrado de cuenta**
+Me lo tomé bastante en serio. Si un usuario le da a borrar cuenta, le obligo a teclear la palabra "Borrar" en un campo de texto para que no haya accidentes. Si lo hace, el backend no solo borra su fila en MySQL, sino que lanza un borrado en cascada que elimina sus canciones y sus playlists de la base de datos.
 
-## 6. Mejoras futuras
+## 5. El dolor de cabeza del despliegue
 
-El código está preparado para soportar más funciones. Lo primero que me gustaría añadir es un plan "Premium" real en la tabla de usuarios que levante las restricciones de subida. 
-También dejé preparadas las tablas de artistas y álbumes, pero actualmente la interfaz de subida usa campos de texto simples. La idea es implementar un autocompletado que busque artistas existentes en la base de datos en lugar de crear registros nuevos cada vez.
+Hacer que esto funcionara en mi ordenador fue relativamente fácil. Subirlo a internet para que el tribunal lo viera fue otra historia.
+
+Registré el dominio `replays.studio` con el pack de estudiantes de GitHub. Le asigné una IP fija a mi máquina de Amazon (Elastic IP) y asocié el dominio. El problema es que Node.js estaba funcionando en el puerto 3000, así que la URL quedaba feísima: `http://replays.studio:3000`. 
+
+Para quitar eso, instalé Nginx en el servidor Ubuntu. Nginx hace de "portero": escucha las peticiones normales de internet (puerto 80) y se las pasa internamente a mi Node. 
+
+Luego me di cuenta de que no podía subir canciones de más de 1 mega. Resulta que Nginx las bloqueaba por seguridad. Tuve que meterme en el archivo de configuración y añadir `client_max_body_size 20M` para arreglarlo.
+
+El paso final fue poner el candado verde de seguridad. Usé Certbot, que modificó el archivo de Nginx para usar el puerto 443 (HTTPS). Sin esto, no hubiese podido hacer funcionar el login con Google.
+
+## 6. Problemas encontrados y futuro
+
+El mayor problema durante el desarrollo fue el CSS en móviles. Yo tenía todo centrado y perfecto en la pantalla de mi ordenador, pero al probarlo en el móvil los botones se montaban unos encima de otros. Tuve que rehacer el reproductor móvil usando `display: grid` para forzar a que la carátula, el texto y el botón de play estuvieran en su sitio sin importar el tamaño de la pantalla.
+
+De cara al futuro, me gustaría intentar tres cosas:
+1.  **Soporte real para géneros**: Ahora mismo las canciones tienen género, pero no se puede filtrar la biblioteca por ellos. 
+2.  **Modo sin conexión**: He estado leyendo sobre Service Workers para cachear algunas canciones en el móvil, pero se me iba de tiempo para esta entrega.
+3.  **Búsqueda compartida**: Que si busco a un artista, no solo salgan mis canciones, sino las que haya subido otra gente, creando una biblioteca colaborativa.
