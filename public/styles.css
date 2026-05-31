@@ -555,21 +555,31 @@ body {
     font-weight: 500;
 }
 
-.expanded-volume {
-    margin-top: 32px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    color: var(--text-secondary);
+/* ocultar volumen por defecto en el mini player de escritorio */
+.player-right {
+    display: none;
 }
 
-.expanded-volume i {
-    font-size: 20px;
+/* mostrar volumen solo cuando el reproductor está expandido (escritorio) */
+.player.expanded .player-right {
+    display: flex !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: fixed;
+    bottom: 50px; /* misma altura que los controles centrales */
+    right: 60px;
+    z-index: 1500;
+    flex: none;
+    width: auto;
+}
+
+.player.expanded .player-right i {
     color: white;
+    font-size: 20px;
 }
 
-.expanded-volume .volume-slider {
-    width: 200px;
+.player.expanded .player-right .volume-slider {
+    width: 150px;
     accent-color: var(--primary-color);
 }
 

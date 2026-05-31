@@ -293,11 +293,6 @@
                         <h2 id="expanded-title"></h2>
                         <h3 id="expanded-artist"></h3>
                     </div>
-
-                    <div class="expanded-volume desktop-only">
-                        <i class="fas fa-volume-up"></i>
-                        <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="70">
-                    </div>
                 </div>
             </div>
         </div>
@@ -337,8 +332,9 @@
             </div>
         </div>
 
-        <div class="player-right">
-            <!-- el volumen se ha movido al modo expandido escritorio -->
+        <div class="player-right desktop-only">
+            <i class="fas fa-volume-up"></i>
+            <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="70">
         </div>
     </footer>
 
