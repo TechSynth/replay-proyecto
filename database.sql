@@ -12,6 +12,7 @@ CREATE TABLE usuarios (
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ultima_conexion TIMESTAMP NULL,
     plan VARCHAR(50) DEFAULT 'gratuito',
+    total_playlists_creadas INT DEFAULT 0,
     INDEX idx_email (email)
 ) ENGINE=InnoDB;
 

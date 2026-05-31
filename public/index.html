@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rePLAY - Reproductor de Música</title>
-    <link rel="icon" href="data:,">
+    <title>rePLAY</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%231DB954' d='M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM188.3 147.1c-7.6 4.2-12.3 12.3-12.3 20.9V344c0 8.7 4.7 16.7 12.3 20.9s16.8 4.1 24.3-.5l144-88c7.1-4.4 11.5-12 11.5-20.4s-4.4-16-11.5-20.4l-144-88c-7.4-4.5-16.7-4.7-24.3-.5z'/></svg>">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
@@ -38,6 +38,12 @@
                             <span>Subir una canción</span>
                         </a>
                     </li>
+                    <li class="mobile-only">
+                        <a href="#" id="mobile-playlists-btn">
+                            <i class="fas fa-list-ul"></i>
+                            <span>Playlists</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             <div class="playlists-nav">
@@ -57,16 +63,59 @@
         <main class="main-content">
             <header class="top-bar">
                 <div class="search-bar">
+                    <i class="fas fa-search search-icon mobile-only"></i>
                     <input type="text" id="search-input" placeholder="¿Qué quieres escuchar?">
-                    <button id="search-btn">Buscar</button>
+                    <button id="search-btn" class="desktop-only">Buscar</button>
                 </div>
-                <div class="user-menu">
-                    <span id="user-name">Usuario Demo</span>
-                    <button id="logout-btn" class="logout-btn" title="Cerrar sesión">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
+                <div class="user-menu" id="user-menu-container">
+                    <div class="user-dropdown-trigger" id="user-dropdown-trigger">
+                        <i class="fas fa-user-circle mobile-only user-avatar-icon"></i>
+                        <span id="user-name">Usuario</span>
+                        <i class="fas fa-chevron-down desktop-only"></i>
+                    </div>
+                    
+                    <div class="user-dropdown-content" id="user-dropdown">
+                        <a href="#" id="change-name-btn"><i class="fas fa-user-edit"></i> Cambiar Nombre</a>
+                        <a href="#" id="delete-account-btn" class="danger"><i class="fas fa-user-times"></i> Borrar Cuenta</a>
+                        <hr>
+                        <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                    </div>
                 </div>
             </header>
+
+            <!-- Modales de Usuario -->
+            <div id="modal-container" class="modal-container">
+                <!-- Modal Cambiar Nombre -->
+                <div id="modal-name" class="modal-content-user">
+                    <h3>Cambiar Nombre</h3>
+                    <input type="text" id="new-name-input" placeholder="Nuevo nombre">
+                    <div class="modal-actions">
+                        <button class="modal-btn-cancel" id="cancel-name-btn">Cancelar</button>
+                        <button class="modal-btn-save" id="save-name-btn">Guardar</button>
+                    </div>
+                </div>
+
+                <!-- Modal Borrar Cuenta (Paso 1) -->
+                <div id="modal-delete-1" class="modal-content-user">
+                    <h3 class="danger-text">¿Borrar cuenta?</h3>
+                    <p>Esta acción es irreversible. Se borrarán tus datos y canciones subidas.</p>
+                    <div class="modal-actions">
+                        <button class="modal-btn-cancel" id="cancel-delete-1">No, cancelar</button>
+                        <button class="modal-btn-danger" id="confirm-delete-1">Sí, continuar</button>
+                    </div>
+                </div>
+
+                <!-- Modal Borrar Cuenta (Paso 2) -->
+                <div id="modal-delete-2" class="modal-content-user">
+                    <h3>Confirmación final</h3>
+                    <p>Escribe <strong>Borrar</strong> para confirmar la eliminación definitiva.</p>
+                    <input type="text" id="delete-confirm-input" placeholder="Escribe 'Borrar'">
+                    <div class="modal-actions">
+                        <button class="modal-btn-cancel" id="cancel-delete-2">Volver</button>
+                        <button class="modal-btn-danger" id="final-delete-btn" disabled>Borrar definitivamente</button>
+                    </div>
+                </div>
+            </div>
 
             <div class="content-area" id="content-area">
                 <section id="home-view">
@@ -221,10 +270,38 @@
     </div>
 
     <!-- Reproductor de música -->
-    <footer class="player">
+    <footer class="player" id="main-player">
+        <!-- Vista Expandida (Slide-up) -->
+        <div class="player-expanded-view" id="player-expanded-view">
+            <button class="close-expanded" id="close-expanded-btn">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            
+            <div class="expanded-content">
+                <div class="expanded-left">
+                    <h3>Cola</h3>
+                    <div class="queue-list" id="queue-list">
+                        <!-- Se cargará dinámicamente -->
+                    </div>
+                </div>
+                
+                <div class="expanded-right">
+                    <div class="large-cover" id="expanded-cover-container">
+                        <img src="img/imagenPlaylist.png" id="expanded-cover-img" alt="Portada grande">
+                    </div>
+                    <div class="expanded-info">
+                        <h2 id="expanded-title"></h2>
+                        <h3 id="expanded-artist"></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="player-left">
-            <div class="song-info">
-                <div class="song-image" style="background-color: transparent;"></div>
+            <div class="song-info" id="mini-player-info">
+                <div class="song-image" id="expand-player-trigger">
+                    <img src="img/imagenPlaylist.png" alt="Mini portada">
+                </div>
                 <div class="song-details">
                     <div class="song-title" id="current-song-title"></div>
                     <div class="song-artist" id="current-song-artist"></div>
@@ -255,10 +332,8 @@
             </div>
         </div>
 
-        <div class="player-right">
-            <button class="control-btn" id="volume-btn">
-                <i class="fas fa-volume-up"></i>
-            </button>
+        <div class="player-right desktop-only">
+            <i class="fas fa-volume-up"></i>
             <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="70">
         </div>
     </footer>
@@ -270,8 +345,32 @@
         </div>
     </div>
 
+    <!-- Menú de playlists para móvil (Bottom Sheet) -->
+    <div id="mobile-playlists-menu" class="mobile-bottom-menu">
+        <div class="menu-overlay" id="mobile-menu-overlay"></div>
+        <div class="menu-content">
+            <div class="menu-header-mobile">
+                <h3>Playlists</h3>
+                <div class="menu-header-actions">
+                    <button id="mobile-add-playlist-btn" class="mobile-add-btn">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button id="close-mobile-menu-btn" class="mobile-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <ul id="mobile-playlist-list-content">
+                <!-- carga dinámica -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Notificaciones emergentes -->
+    <div id="toast-container" class="toast-container"></div>
+
     <script src="auth.js"></script>
     <script src="app.js"></script>
-</body>
+    </body>
 
-</html>
+    </html>
