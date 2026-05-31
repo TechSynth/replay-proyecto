@@ -1,4 +1,4 @@
-# rePLAY 🎧
+# rePLAY
 ### *Cloud-Native Music Streaming Platform*
 
 rePLAY is a single Page Application personal music management. Developed as a Final Degree Project (TFG) for the C.F.G.S in Web Application Development (DAW II), it demonstrates the seamless integration of modern web technologies with professional-grade AWS cloud infrastructure.
@@ -7,7 +7,7 @@ rePLAY is a single Page Application personal music management. Developed as a Fi
 
 ---
 
-## 🏗 System Architecture
+##  System Architecture
 rePLAY utilizes a **decoupled, three-tier architecture** to ensure maximum performance and scalability:
 
 1.  **Presentation Layer (Frontend)**: A responsive SPA built with Vanilla JavaScript (ES6+), optimized for seamless transitions and real-time DOM manipulation.
@@ -18,26 +18,26 @@ rePLAY utilizes a **decoupled, three-tier architecture** to ensure maximum perfo
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
-### 🎵 Premium Playback Experience
+###  Premium Playback Experience
 *   **Hero Transitions**: Symmetrical shared-element animations for a fluid mobile experience.
 *   **Neomorphic Design**: A modern "Dark Mode" aesthetic using shadows and highlights for a tactile feel.
 *   **Real-time Progress**: Highly accurate synchronization between the audio engine and visual indicators.
 
-### 📁 Smart Media Management
+###  Smart Media Management
 *   **Automated Metadata Extraction**: Automatic parsing of ID3 tags (Title, Artist, Album Art) during MP3 uploads.
 *   **Cloud-First Storage**: Direct integration with AWS S3 for ultra-fast media streaming.
 *   **Intuitive Playlists**: Drag & Drop organization on desktop and Bottom-Sheet menus on mobile.
 
-### 🛡 Security & User Control
+###  Security & User Control
 *   **OAuth 2.0 Integration**: Secure login with **Google Authentication**.
 *   **JWT Sessions**: Stateless authentication for improved performance and security.
 *   **Atomic Deletion**: Secure account removal with automatic cleanup of all associated S3 files and RDS records.
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 | Component | Technology | Role |
 | :--- | :--- | :--- |
@@ -51,7 +51,7 @@ rePLAY utilizes a **decoupled, three-tier architecture** to ensure maximum perfo
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 *   Node.js (v20 or higher)
@@ -94,7 +94,7 @@ rePLAY utilizes a **decoupled, three-tier architecture** to ensure maximum perfo
 
 ---
 
-## 🎓 Academic Information
+##  Academic Information
 This project represents the cumulative work for the **C.F.G.S Development of Web Applications (DAW II)**.
 
 *   **Focus Areas:** Cloud Computing (AWS), RESTful API Design, Responsive UX/UI.
