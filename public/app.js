@@ -149,8 +149,28 @@ async function analyzeFile(file) {
 }
 
 /**
+ * muestra un mensaje emergente en la parte superior  */
+function showToast(message, type = "success") {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    
+    const icon = type === "success" ? "fa-check-circle" : "fa-exclamation-circle";
+    toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+    
+    container.appendChild(toast);
+
+    // se quita solo a los 3 segundos
+    setTimeout(() => {
+        toast.classList.add("fade-out");
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+/**
  * sube la canción y la imagen al servidor
- * el servidor se encarga de mandarlo a amazon s3
  */
 async function uploadSong(formData) {
     const status = elements.uploadStatus;
@@ -175,16 +195,13 @@ async function uploadSong(formData) {
         const data = await response.json();
 
         if (data.success) {
-            status.textContent = `¡canción subida con éxito!`;
-            status.className = "upload-status success";
-            setTimeout(() => {
-                elements.uploadForm.reset();
-                document.getElementById("metadata-fields").style.display = "none";
-                status.style.display = "none";
-            }, 3000);
+            showToast("canción subida correctamente");
+            elements.uploadForm.reset();
+            document.getElementById("metadata-fields").style.display = "none";
+            status.style.display = "none";
             
             await fetchSongs();
-            if (elements.libraryView.style.display !== "none") await fetchLibrary();
+            switchView("home");
         } else {
             status.textContent = `error: ${data.error}`;
             status.className = "upload-status error";

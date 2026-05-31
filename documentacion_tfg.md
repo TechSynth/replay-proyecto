@@ -76,3 +76,15 @@
 - recuperación del botón de gestión de playlists en la versión web de escritorio, garantizando que la funcionalidad de creación sea accesible en todas las plataformas.
 - corrección de interactividad táctil: depuración de los manejadores onclick para el cierre y creación de playlists en dispositivos móviles, eliminando conflictos de propagación de eventos.
 - corrección crítica: restauración de la estructura html del menú de playlists en móvil (bottom sheet), asegurando que los identificadores de los botones coincidan con los manejadores de eventos en javascript para restablecer su funcionalidad.
+
+## día 31 de mayo
+- despliegue profesional definitivo: asociación de dirección ip elástica en aws ec2 para garantizar una dirección estática y permanente para el servidor.
+- configuración de dominio: registro del dominio profesional "replays.studio" y configuración de registros dns (a record) para vincular la url con la infraestructura cloud.
+- implementación de seguridad ssl: instalación de certificados let's encrypt mediante certbot, habilitando el protocolo https y garantizando el candado de seguridad en el navegador.
+- configuración de nginx como proxy inverso: optimización del servidor web para redirigir el tráfico del puerto 80/443 internamente al puerto 3000 de node.js, mejorando la seguridad y el rendimiento.
+- resolución de límites de subida: ajuste de la directiva "client_max_body_size" en nginx a 20mb para permitir la carga de archivos de música de alta fidelidad, superando el límite por defecto de 1mb (error 413).
+- corrección de integración con google: actualización de los orígenes de javascript autorizados en la consola de google cloud para permitir la autenticación social bajo el nuevo dominio https.
+- mejora de la retroalimentación al usuario (ux): sustitución de alertas bloqueantes del navegador por un sistema de notificaciones emergentes (toasts) personalizadas dentro de la web para confirmaciones de subida.
+- refinamiento visual del reproductor móvil: implementación final de la barra de progreso como una línea fina minimalista en la base del mini-reproductor, maximizando el espacio para el arte y los textos.
+- optimización ergonómica en escritorio: traslado de los controles de volumen al modo expandido (slide-up) para limpiar el reproductor principal y maximizar el espacio de los controles de reproducción.
+- ocultación selectiva de volumen: eliminación total de los controles de sonido en la versión móvil para simplificar la interfaz y evitar elementos accidentales en pantallas táctiles.
