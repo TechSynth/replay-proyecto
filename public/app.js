@@ -59,6 +59,7 @@ const elements = {
     playlistCover: document.getElementById("playlist-cover"), 
     progressContainer: document.getElementById("progress-container"), 
     recentSongsGrid: document.getElementById("recent-songs-grid"),
+
     // cosas del reproductor cuando se hace grande
     mainPlayer: document.getElementById("main-player"),
     playerExpandedView: document.getElementById("player-expanded-view"),
@@ -127,14 +128,14 @@ async function analyzeFile(file) {
 
             const imageHint = document.getElementById("image-hint");
             if (data.data.has_picture) {
-                imageHint.innerHTML = `<i class="fas fa-check"></i> el archivo ya incluye carátula, se usará automáticamente.`;
+                imageHint.innerHTML = `<i class="fas fa-check"></i> El archivo ya incluye carátula, se usará automáticamente.`;
                 imageHint.style.color = "#1DB954";
             } else {
-                imageHint.innerHTML = `<i class="fas fa-info-circle"></i> el archivo no tiene carátula, puedes subir una manualmente.`;
+                imageHint.innerHTML = `<i class="fas fa-info-circle"></i> El archivo no tiene carátula, puedes subir una manualmente.`;
                 imageHint.style.color = "#b3b3b3";
             }
 
-            suggestion.innerHTML = `<p><i class="fas fa-magic"></i> ¡archivo analizado! revisa los datos y completa el género.</p>`;
+            suggestion.innerHTML = `<p><i class="fas fa-magic"></i> ¡Archivo analizado! revisa los datos y completa el género.</p>`;
             suggestion.className = "upload-status success";
 
         } else {
@@ -143,7 +144,7 @@ async function analyzeFile(file) {
         }
     } catch (error) {
         console.error("error en análisis:", error);
-        status.textContent = "error al conectar con el analizador (404/500)";
+        status.textContent = "Error al conectar con el analizador (404/500)";
         status.className = "upload-status error";
     }
 }
@@ -195,7 +196,7 @@ async function uploadSong(formData) {
         const data = await response.json();
 
         if (data.success) {
-            showToast("canción subida correctamente");
+            showToast("Canción subida correctamente");
             elements.uploadForm.reset();
             document.getElementById("metadata-fields").style.display = "none";
             status.style.display = "none";
@@ -207,8 +208,8 @@ async function uploadSong(formData) {
             status.className = "upload-status error";
         }
     } catch (error) {
-        console.error("error en subida:", error);
-        status.textContent = "error de red al subir";
+        console.error("error en subida, comprobar AWS credentials:", error);
+        status.textContent = "404 ERROR, ponte en contacto con un administrador";
         status.className = "upload-status error";
     } finally {
         submitBtn.disabled = false;
@@ -231,7 +232,7 @@ async function fetchSongs() {
             renderSongs(data.data);
         }
     } catch (error) {
-        console.error("error cargando canciones:", error);
+        console.error("Error cargando canciones:", error);
     }
 }
 
@@ -246,7 +247,7 @@ async function fetchLibrary() {
         });
         
         if (!response.ok) {
-            console.error("error en fetch library:", response.status);
+            console.error("Error en fetch de library:", response.status);
             return;
         }
 
@@ -257,7 +258,7 @@ async function fetchLibrary() {
             renderLibrary(data.data);
         }
     } catch (error) {
-        console.error("error cargando biblioteca:", error);
+        console.error("Error cargando biblioteca:", error);
     }
 }
 
@@ -276,7 +277,7 @@ async function searchSongs(query) {
             }
         }
     } catch (error) {
-        console.error("error en búsqueda:", error);
+        console.error("Error en búsqueda:", error);
     }
 }
 
@@ -284,7 +285,7 @@ async function searchSongs(query) {
 function renderSongs(songs) {
     elements.songsGrid.innerHTML = ``;
     if (songs.length === 0) {
-        elements.songsGrid.innerHTML = `<p>no hay canciones disponibles</p>`;
+        elements.songsGrid.innerHTML = `<p>No hay canciones disponibles</p>`;
         return;
     }
     songs.forEach(song => {
@@ -300,7 +301,7 @@ function renderLibrary(songs) {
     elements.libraryListItems.innerHTML = ``;
     
     if (songs.length === 0) {
-        const msg = `<p style="padding: 20px; color: #b3b3b3;">no has subido ninguna canción todavía.</p>`;
+        const msg = `<p style="padding: 20px; color: #b3b3b3;">No has subido ninguna canción todavía.</p>`;
         elements.libraryGrid.innerHTML = msg;
         elements.libraryListItems.innerHTML = msg;
         return;
@@ -335,7 +336,7 @@ function createSongCard(song) {
         <img src="${imageUrl}" alt="${song.titulo}">
         </div>
         <div class="song-card-title">${song.titulo}</div>
-        <div class="song-card-artist">${song.artista_nombre || "artista desconocido"}</div>`;
+        <div class="song-card-artist">${song.artista_nombre || "Artista desconocido"}</div>`;
     
     return card;
 }
@@ -366,7 +367,7 @@ function createListItem(song, index, showDate = true) {
     const imageUrl = song.imagen_url || "img/imagenPlaylist.png";
     const dateHtml = showDate ? `<div class="col-date">${date}</div>` : "";
     
-    item.innerHTML = `<div class="col-cover"><div class="item-cover"><img src="${imageUrl}" alt="${song.titulo}"></div></div><div class="item-info"><span class="item-title">${song.titulo}</span><span class="item-artist">${song.artista_nombre || "artista desconocido"}</span></div><div class="item-album">${song.album_nombre || "sin álbum"}</div>${dateHtml}`;
+    item.innerHTML = `<div class="col-cover"><div class="item-cover"><img src="${imageUrl}" alt="${song.titulo}"></div></div><div class="item-info"><span class="item-title">${song.titulo}</span><span class="item-artist">${song.artista_nombre || "Artista desconocido"}</span></div><div class="item-album">${song.album_nombre || "Sin álbum"}</div>${dateHtml}`;
 
     return item;
 }
@@ -374,7 +375,7 @@ function createListItem(song, index, showDate = true) {
 function renderSearchResults(results) {
     elements.searchResults.innerHTML = ``;
     if (results.length === 0) {
-        elements.searchResults.innerHTML = `<p>no se encontraron resultados</p>`;
+        elements.searchResults.innerHTML = `<p>No se encontraron resultados</p>`;
         return;
     }
     results.forEach(song => {
@@ -393,7 +394,7 @@ function updateArtworkDOM(song) {
     elements.expandTrigger.innerHTML = `<img src="${imageUrl}" alt="cover">`;
     elements.expandedCoverImg.src = imageUrl;
     elements.expandedTitle.textContent = song.titulo;
-    elements.expandedArtist.textContent = song.artista_nombre || "artista desconocido";
+    elements.expandedArtist.textContent = song.artista_nombre || "Artista desconocido";
 }
 
 /**
@@ -447,10 +448,10 @@ function playSong(song, direction = null) {
     
     audioPlayer.src = "/api/music/stream/" + song.id;
     audioPlayer.volume = appState.volume;
-    audioPlayer.play().catch(err => console.error("error al reproducir:", err));
+    audioPlayer.play().catch(err => console.error("Error al reproducir:", err));
     
     elements.currentSongTitle.textContent = song.titulo;
-    elements.currentSongArtist.textContent = song.artista_nombre || "artista desconocido";
+    elements.currentSongArtist.textContent = song.artista_nombre || "Artista desconocido";
     
     document.querySelector("#play-btn i").className = "fas fa-pause";
     
@@ -489,7 +490,7 @@ function renderRecentSongs() {
     const recent = JSON.parse(localStorage.getItem(key) || "[]");
     elements.recentSongsGrid.innerHTML = ``;
     if (recent.length === 0) {
-        elements.recentSongsGrid.innerHTML = `<p style="color:#666; padding: 20px;">no has escuchado canciones recientemente</p>`;
+        elements.recentSongsGrid.innerHTML = `<p style="color:#666666; padding: 20px;">No has escuchado canciones recientemente</p>`;
         return;
     }
     recent.forEach(song => {
@@ -603,7 +604,7 @@ async function fetchPlaylists(userId) {
             renderPlaylists();
         }
     } catch (err) {
-        console.error("error cargando playlists:", err);
+        console.error("Error cargando playlists:", err);
     }
 }
 
@@ -675,7 +676,7 @@ async function createNewPlaylist() {
     }
 }
 
-// detecta arrastre desde el reproductor
+// detecta arrastre desde el reproductor.
 const playerSongInfo = document.querySelector(".player-left .song-info");
 if (playerSongInfo) {
     playerSongInfo.draggable = true;
@@ -710,10 +711,10 @@ async function addSongToPlaylist(playlistId, songId) {
                 showPlaylistDetail(playlistId);
             }
         } else {
-            alert(result.error || "error al añadir canción");
+            alert(result.error || "Error al añadir canción");
         }
     } catch (err) {
-        console.error("error añadiendo a playlist:", err);
+        console.error("Error añadiendo a playlist:", err);
     }
 }
 
@@ -792,7 +793,7 @@ async function showPlaylistDetail(id) {
             };
         }
     } catch (err) {
-        console.error("error cargando detalle:", err);
+        console.error("Error cargando detalle:", err);
     }
 }
 
@@ -803,7 +804,7 @@ function renderPlaylistSongs(songs) {
         header.style.display = songs.length === 0 ? "none" : "grid";
     }
     if (songs.length === 0) {
-        elements.playlistSongsList.innerHTML = `<div class="no-results">esta playlist está vacía, arrastra algo aquí</div>`;
+        elements.playlistSongsList.innerHTML = `<div class="no-results">Esta playlist está vacía, arrastra algo aquí</div>`;
         return;
     }
     songs.forEach((song, index) => {
@@ -847,12 +848,12 @@ async function updatePlaylistTitle(id, newName) {
             renderPlaylists();
         }
     } catch (err) {
-        console.error("error actualizando título:", err);
+        console.error("Error actualizando título:", err);
     }
 }
 
-async function deletePlaylist(id) {
-    if (!confirm("¿estás seguro de que quieres borrar esta lista?")) return;
+async function deletePlaylist(id) { // comprobar más tarde.
+    if (!confirm("¿Quieres borrar "+id+"?")) return;
     try {
         const response = await fetch(`/api/playlists/${id}`, {
             method: "DELETE",
@@ -865,7 +866,7 @@ async function deletePlaylist(id) {
             switchView("home");
         }
     } catch (err) {
-        console.error("error borrando playlist:", err);
+        console.error("Error borrando playlist:", err);
     }
 }
 
@@ -978,7 +979,7 @@ function renderQueue() {
     const nextSongs = appState.songs.slice(currentIndex + 1);
     
     if (nextSongs.length === 0) {
-        elements.queueList.innerHTML = `<p style="color: #666; padding: 20px;">no hay más canciones en cola por ahora</p>`;
+        elements.queueList.innerHTML = `<p style="color: #666; padding: 20px;">No hay más canciones en cola por ahora</p>`;
         return;
     }
     
@@ -1085,7 +1086,7 @@ document.getElementById("save-name-btn").addEventListener("click", async () => {
             body: JSON.stringify({ nombre: nuevoNombre })
         });
         
-        if (!response.ok) throw new Error("error en la petición");
+        if (!response.ok) throw new Error("Error en la petición");
         
         const data = await response.json();
         if (data.success) {
@@ -1117,14 +1118,14 @@ document.getElementById("final-delete-btn").addEventListener("click", async () =
             headers: getAuthHeaders()
         });
         
-        if (!response.ok) throw new Error("error al borrar la cuenta");
+        if (!response.ok) throw new Error("Error al borrar la cuenta");
         
         const data = await response.json();
         if (data.success) {
             auth.logout();
             window.location.href = "/login";
         }
-    } catch (err) { console.error("error al eliminar cuenta:", err); }
+    } catch (err) { console.error("Error al eliminar cuenta:", err); }
 });
 
 document.getElementById("logout-link").addEventListener("click", (e) => {
@@ -1207,7 +1208,7 @@ document.getElementById("delete-playlist-btn").addEventListener("click", (e) => 
 
 document.getElementById("share-playlist-btn").addEventListener("click", (e) => {
     e.preventDefault();
-    alert("funcionalidad de compartir no disponible todavía");
+    alert("Funcionalidad de compartir no disponible todavía");
 });
 
 elements.playlistName.addEventListener("keydown", (e) => {

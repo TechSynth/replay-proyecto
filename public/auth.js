@@ -28,7 +28,7 @@ class Auth {
             }
         } catch (error) {
             console.error("error en login:", error);
-            return { success: false, error: "error al conectar con el servidor" };
+            return { success: false, error: "Error al conectar con el servidor" };
         }
     }
 
@@ -55,7 +55,7 @@ class Auth {
             }
         } catch (error) {
             console.error("error en registro:", error);
-            return { success: false, error: "error al conectar con el servidor" };
+            return { success: false, error: "Error al conectar con el servidor" };
         }
     }
 
@@ -94,7 +94,7 @@ class Auth {
             }
             return { success: false, error: data.error };
         } catch (error) {
-            return { success: false, error: "error de conexion" };
+            return { success: false, error: "Error de conexion" };
         }
     }
 
@@ -167,13 +167,13 @@ if (document.getElementById("login-form")) {
         errorDiv.style.display = "none";
 
         if (password !== confirm) {
-            errorDiv.textContent = "las contraseñas no coinciden";
+            errorDiv.textContent = "Las contraseñas no coinciden";
             errorDiv.style.display = "block";
             return;
         }
 
         if (password.length < 6) {
-            errorDiv.textContent = "la contraseña es muy corta, pon al menos 6 letras o números";
+            errorDiv.textContent = "La contraseña es muy corta, pon al menos 6 letras o números";
             errorDiv.style.display = "block";
             return;
         }
