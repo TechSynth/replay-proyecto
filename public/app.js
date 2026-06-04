@@ -191,7 +191,14 @@ async function uploadSong(formData) {
             body: formData
         });
 
-        if (!response.ok) throw new Error(`error ${response.status}`);
+        if (!response.ok) {
+            let errorMsg = `error ${response.status}`;
+            try {
+                const errData = await response.json();
+                if (errData.error) errorMsg = errData.error;
+            } catch(e) {}
+            throw new Error(errorMsg);
+        }
 
         const data = await response.json();
 
@@ -208,8 +215,8 @@ async function uploadSong(formData) {
             status.className = "upload-status error";
         }
     } catch (error) {
-        console.error("error en subida, comprobar AWS credentials:", error);
-        status.textContent = "404 ERROR, ponte en contacto con un administrador";
+        console.error("error en subida:", error);
+        status.textContent = `error en subida: ${error.message}`;
         status.className = "upload-status error";
     } finally {
         submitBtn.disabled = false;
