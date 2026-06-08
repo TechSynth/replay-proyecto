@@ -435,6 +435,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     transform: none;
     max-width: none;
     border-radius: 0;
@@ -1855,7 +1856,7 @@ body {
 
     /* ajustes slideup móvil */
     .player.expanded .player-center {
-        bottom: 140px !important; /* subir controles */
+        bottom: 10dvh !important; /* posición relativa al tamaño real visible */
         position: fixed;
         left: 0;
         right: 0;
