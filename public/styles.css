@@ -1763,9 +1763,13 @@ body {
     }
 
     .player-left .song-image {
-        width: 55px !important;
-        height: 55px !important;
+        width: 45px !important;
+        height: 45px !important;
+        min-width: 45px !important;
+        min-height: 45px !important;
         margin: 0 !important;
+        flex-shrink: 0 !important;
+        aspect-ratio: 1/1 !important;
     }
 
     /* texto grande y centrado en la única fila */
@@ -1795,6 +1799,25 @@ body {
     .player-left .song-artist {
         font-size: 13px !important;
         color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+    }
+
+    .marquee-text {
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .marquee-text.is-marquee {
+        padding-left: 100%;
+        animation: marqueeScroll 10s linear infinite;
+    }
+
+    @keyframes marqueeScroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-100%); }
     }
 
     .player-center {
@@ -1879,26 +1902,43 @@ body {
     .expanded-content {
         flex-direction: column;
         justify-content: flex-start;
-        padding-top: 40px;
+        padding-top: 20px;
     }
 
     .large-cover {
-        max-width: 320px;
-        margin-top: 60px; /* bajar carátula */
-        margin-bottom: 12px; /* reducir espacio con título */
+        width: 250px !important;
+        height: 250px !important;
+        min-width: 250px !important;
+        min-height: 250px !important;
+        max-width: 250px !important;
+        margin-top: 10px; /* subir carátula */
+        margin-bottom: 32px; /* aumentar espacio con título */
+        flex-shrink: 0 !important;
+        aspect-ratio: 1/1 !important;
     }
 
     .expanded-info {
         text-align: center;
+        width: 100%;
+        max-width: 300px; /* limit width to allow marquee */
+        overflow: hidden;
     }
 
     .expanded-info h2 {
         font-size: 26px;
         margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
     }
 
     .expanded-info h3 {
         font-size: 18px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
     }
 
     /* MENÚ PLAYLISTS MÓVIL (Bottom Sheet) */

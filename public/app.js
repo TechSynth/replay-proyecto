@@ -400,8 +400,8 @@ function updateArtworkDOM(song) {
     const imageUrl = song.imagen_url || "img/imagenPlaylist.png";
     elements.expandTrigger.innerHTML = `<img src="${imageUrl}" alt="cover">`;
     elements.expandedCoverImg.src = imageUrl;
-    elements.expandedTitle.textContent = song.titulo;
-    elements.expandedArtist.textContent = song.artista_nombre || "Artista desconocido";
+    checkAndApplyMarquee(elements.expandedTitle, song.titulo);
+    checkAndApplyMarquee(elements.expandedArtist, song.artista_nombre || "Artista desconocido");
 }
 
 /**
@@ -435,6 +435,20 @@ function animateArtworkChange(newSong, direction) {
 }
 
 /**
+ * Aplica el efecto marquee si el texto es demasiado largo para su contenedor
+ */
+function checkAndApplyMarquee(element, text) {
+    element.innerHTML = `<span class="marquee-text">${text}</span>`;
+    requestAnimationFrame(() => {
+        const span = element.querySelector('.marquee-text');
+        // Si el contenedor es más pequeño que el texto, aplica la animación
+        if (span.scrollWidth > element.clientWidth) {
+            span.classList.add('is-marquee');
+        }
+    });
+}
+
+/**
  * función principal para reproducir una pista
  * maneja el streaming desde el servidor
  */
@@ -457,8 +471,8 @@ function playSong(song, direction = null) {
     audioPlayer.volume = appState.volume;
     audioPlayer.play().catch(err => console.error("Error al reproducir:", err));
     
-    elements.currentSongTitle.textContent = song.titulo;
-    elements.currentSongArtist.textContent = song.artista_nombre || "Artista desconocido";
+    checkAndApplyMarquee(elements.currentSongTitle, song.titulo);
+    checkAndApplyMarquee(elements.currentSongArtist, song.artista_nombre || "Artista desconocido");
     
     document.querySelector("#play-btn i").className = "fas fa-pause";
     
