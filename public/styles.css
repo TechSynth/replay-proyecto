@@ -1854,6 +1854,15 @@ body {
         display: none !important;
     }
 
+    .close-expanded {
+        top: 35px !important;
+        left: calc(50% + 135px) !important; /* 125px (mitad del artwork) + 10px margen */
+        right: auto !important;
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 14px !important;
+    }
+
     /* ajustes slideup móvil */
     .player.expanded .player-center {
         bottom: 12dvh !important; /* subir controles para asegurar visibilidad */
