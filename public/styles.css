@@ -1856,13 +1856,13 @@ body {
 
     /* ajustes slideup móvil */
     .player.expanded .player-center {
-        bottom: 10dvh !important; /* posición relativa al tamaño real visible */
+        bottom: 8dvh !important; /* posición relativa al tamaño real visible */
         position: fixed;
         left: 0;
         right: 0;
         width: 100% !important;
         display: flex !important;
-        flex-direction: column !important;
+        flex-direction: column-reverse !important;
         align-items: center !important;
     }
 
@@ -1888,7 +1888,8 @@ body {
     .player.expanded .player-progress {
         display: flex !important;
         width: 85% !important;
-        margin-top: 24px;
+        margin-top: 0;
+        margin-bottom: 24px;
     }
 
     .player.expanded .player-progress .time {
